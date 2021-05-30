@@ -1,16 +1,9 @@
 package com.amrTm.restApiJpaJwtX509Authentication.entity;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -19,14 +12,18 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.MapKeyJoinColumn;
-import javax.validation.constraints.Email;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
+@Table(name="Teacher")
 public class Teacher {
 	@Id
-	@GeneratedValue(strategy=GenerationType.SEQUENCE)
+	@NotNull
+	@GeneratedValue
 	private Long id;
 	@NotBlank(message="username must be included")
 	private String username;
@@ -36,22 +33,20 @@ public class Teacher {
 	@NotBlank(message="teacher code must be included")
 	private String codeTeacher;
 	@NotBlank(message="email must be included")
-	@Email(message="Must be a valid email", regexp="{email}")
+//	@Email(message="Must be a valid email", regexp="{email}")
 	private String email;
-	@ElementCollection
-	@CollectionTable(name="LESSONS",joinColumns= {@JoinColumn(name="TEACHER_ID")})
-	@MapKeyJoinColumn(name="LESSON_CODE")
-	private Map<String,Lesson> lesson;
-	@ElementCollection
-	@Column(name="HOUR_OF_ARRIVALS", columnDefinition="DATE")
-	private List<LocalDateTime> arrival;
-	@ManyToMany
-	@JoinTable(name="SCHOOL_MEMBERS", joinColumns= {@JoinColumn(name="TEACHER_ID")}, inverseJoinColumns= {@JoinColumn(name="STUDENT_ID")})
+	@ManyToMany(mappedBy="teacherLesson")
+	private Set<TeacherLesson> teacherLes;
+	@ManyToMany(mappedBy="teacherArrive")
+	private Set<ArrivalTeacher> teacherArr;
+	@ManyToMany(cascade= {CascadeType.MERGE})
+	@JoinTable(name="Scholl_Members", joinColumns= {@JoinColumn(name="Teacher_Id")}, inverseJoinColumns= {@JoinColumn(name="Student_Id")})
+	@JsonIgnore
 	private Set<Student> students;
 	public Teacher() {
 		super();
-		this.lesson = new HashMap<>();
-		this.arrival = new ArrayList<>();
+		this.teacherLes = new HashSet<>();
+		this.teacherArr = new HashSet<>();
 		this.students = new HashSet<>();
 		// TODO Auto-generated constructor stub
 	}
@@ -73,18 +68,22 @@ public class Teacher {
 	public void setCodeTeacher(String codeTeacher) {
 		this.codeTeacher = codeTeacher;
 	}
-	public Map<String, Lesson> getLesson() {
-		return lesson;
-	}
-	public void setLesson(String code, Lesson lesson) {
-		this.lesson.put(code, lesson);
+	public Set<TeacherLesson> getLesson() {
+		return teacherLes;
 	}
 	public Set<Student> getStudents() {
 		return students;
 	}
-	public void setStudents(Student students) {
-		this.students.add(students);
-	}
+//	public void addStudents(Student students) {
+//		if(this.students.contains(students)) {return ;}
+//		this.students.add(students);
+//		students.addTeacher(this);
+//	}
+//	public void removeStudents(Student students) {
+//		if(!this.students.contains(students)) {return ;}
+//		this.students.remove(students);
+//		students.removeTeacher(this);
+//	}
 	public GenderType getGender() {
 		return gender;
 	}
@@ -97,10 +96,42 @@ public class Teacher {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	public List<LocalDateTime> getArrival() {
-		return arrival;
+	public Set<ArrivalTeacher> getArrival() {
+		return teacherArr;
 	}
-	public void setArrival(LocalDateTime arrival) {
-		this.arrival.add(arrival);
+	public Set<TeacherLesson> getTeacherLesson() {
+		return teacherLes;
+	}
+//	public void addLesson(Lesson lesson) {
+//		if(this.teacherLes.contains(lesson)) {return ;}
+//		this.teacherLes.add(lesson);
+//		lesson.addLesson(this);
+//	}
+//	public void removeLesson(Lesson lesson) {
+//		if(!this.teacherLes.contains(lesson)) {return ;}
+//		this.teacherLes.remove(lesson);
+//		lesson.removeLesson(this);
+//	}
+	public Set<ArrivalTeacher> getTeachersArrive() {
+		return teacherArr;
+	}
+//	public void addArrive(Arrival arrive) {
+//		if(this.teacherArr.contains(arrive)) {return ;}
+//		this.teacherArr.add(arrive);
+//		arrive.addArrive(this);
+//	}
+//	public void removeArrive(Arrival arrive) {
+//		if(!this.teacherArr.contains(arrive)) {return ;}
+//		this.teacherArr.remove(arrive);
+//		arrive.removeArrive(this);
+//	}
+	public void setTeacherLesson(Set<TeacherLesson> teacherLes) {
+		this.teacherLes = teacherLes;
+	}
+	public void setTeachersArrive(Set<ArrivalTeacher> teacherArr) {
+		this.teacherArr = teacherArr;
+	}
+	public void setStudents(Set<Student> students) {
+		this.students = students;
 	}
 }
