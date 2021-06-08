@@ -4,13 +4,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 
-import org.hibernate.Hibernate;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
@@ -19,6 +15,8 @@ import com.amrTm.restApiJpaJwtX509Authentication.entity.ArrivalStudent;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.StudentLesson;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Student;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
+import com.amrTm.restApiJpaJwtX509Authentication.exception.AttributeNotFoundException;
+import com.amrTm.restApiJpaJwtX509Authentication.exception.SaveAttributeException;
 import com.amrTm.restApiJpaJwtX509Authentication.repo.ArriveStudentRepo;
 import com.amrTm.restApiJpaJwtX509Authentication.repo.LessonStudentRepo;
 import com.amrTm.restApiJpaJwtX509Authentication.repo.StudentRepo;
@@ -28,6 +26,7 @@ import com.amrTm.restApiJpaJwtX509Authentication.repo.TeacherRepo;
 public class StudentService {
 	
 	private StudentRepo studentRepo;
+	private TeacherRepo teacherRepo; 
 	private ArriveStudentRepo arriveStudentRepo;
 	private LessonStudentRepo lessonStudentRepo; 
 	
@@ -39,7 +38,7 @@ public class StudentService {
 		this.lessonStudentRepo = lessonStudentRepo;
 	}
 
-	public List<Student> getAll(){
+	public List<Student> getAll() {
 		return studentRepo.findAll(Sort.by(Order.asc("first")));
 	}
 	
@@ -47,12 +46,12 @@ public class StudentService {
 		return studentRepo.findAllByStudentCode(studentCode);
 	}
 
-	public Optional<Student> get(String code){
-		return studentRepo.findByStudentCode(code);
+	public Student get(String code) throws AttributeNotFoundException{
+		return studentRepo.findByStudentCode(code).orElseThrow(()->new AttributeNotFoundException("Student cannot found !"));
 	}
 	
-	public Optional<StudentLesson> getLesson(String codeLesson){
-		return lessonStudentRepo.findByCodeLesson(codeLesson);
+	public StudentLesson getLesson(String codeLesson) throws AttributeNotFoundException{
+		return lessonStudentRepo.findByCodeLesson(codeLesson).orElseThrow(()->new AttributeNotFoundException("Study cannot found !"));
 	}
 	
 	public List<StudentLesson> getLessonByType(String typeLesson){
@@ -67,129 +66,171 @@ public class StudentService {
 		return arriveStudentRepo.findArriveBeetween(start, end);
 	}
 	
-	public ArrivalStudent getArrive(Long id) {
+	public ArrivalStudent getArrive(Long id) throws EntityNotFoundException{
 		return arriveStudentRepo.getById(id);
 	}
 	
 //	========================================================================================
 	
-	public boolean save(Student student){
+	public void save(Student student) throws SaveAttributeException{
 		try {
 			studentRepo.save(student);
-			return true;
 		}
-		catch(Exception w) {return false;}
+		catch(Exception w) {throw new SaveAttributeException("Cannot saving this student, please check your input /or maybe this student has been saved");}
 	}
 	
-	public boolean saveAll(List<Student> students) {
+	public void saveAll(List<Student> students) throws SaveAttributeException {
 		try {
-			studentRepo.saveAllAndFlush(students);
-			return true;
+			studentRepo.saveAllAndFlush(students);}
+		catch(Exception e) {
+			throw new SaveAttributeException("Cannot saving students, please check your input /or maybe there are students who have been saved");}
+	}
+	
+	public void saveLesson(StudentLesson lesson) throws SaveAttributeException {
+		try {
+			lessonStudentRepo.save(lesson);}
+		catch(Exception e) {
+			throw new SaveAttributeException("Cannot saving this study, maybe study with the same code and name has been saved");
 		}
-		catch(Exception e) {return false;}
 	}
 	
-	public void saveLesson(StudentLesson lesson) {
-		lessonStudentRepo.save(lesson);
+	public void saveAllLesson(List<StudentLesson> lessons) throws SaveAttributeException {
+		try {
+			lessonStudentRepo.saveAllAndFlush(lessons);}
+		catch(Exception e) {throw new SaveAttributeException("Cannot saving this studies, maybe study with the same code and name has been saved");}
 	}
 	
-	public void saveAllLesson(List<StudentLesson> lessons) {
-		lessonStudentRepo.saveAllAndFlush(lessons);
+	public void saveArrive(ArrivalStudent arrive) throws SaveAttributeException {
+		try {
+			arriveStudentRepo.save(arrive);}
+		catch(Exception e) {
+			throw new SaveAttributeException("Cannot saving this arrive, please retry to input");
+		}
 	}
 	
-	public void saveArrive(ArrivalStudent arrive) {
-		arriveStudentRepo.save(arrive);
-	}
-	
-	public boolean modify(Student student, String code){
+	public void modify(Student student, String code) throws SaveAttributeException{
 		try {
 			studentRepo.update(student.getFirst(), student.getLast(), student.getGender(), student.getEmail(), code);
-			return true;
 		}
 		catch(Exception e) {
-			return false;
+			throw new SaveAttributeException("Cannot modify this student, please check your input /or maybe email has been same with the other student");
 		}
 	}
 	
-	public boolean modifyAll(Iterable<Student> student){
+	public void modifyAll(Iterable<Student> student) throws SaveAttributeException{
 		try {
 			for (Student g : student) {
 				studentRepo.update(g.getFirst(), g.getLast(), g.getGender(), g.getEmail(), g.getStudentCode());
 			}
-			return true;
 		}
 		catch(Exception e) {
-			return false;
+			throw new SaveAttributeException("Cannot modify students, please check your input, /or maybe email has been same with the other student");
 		}
 	}
 	
 	@Transactional
-	public boolean modifyStudentLesson(Student student, StudentLesson codelesson, AccessModification access) {
-		if(access.equals(AccessModification.ADD)) {
-//			StudentLesson mn = new StudentLesson();
-//			mn.setId(codelesson.getId());
-//			mn.setCodeLesson(codelesson.getCodeLesson());
-//			mn.setLesson(codelesson.getLesson());
-//			mn.setTypeLesson(codelesson.getTypeLesson());
-			Student hg = new Student();
-			hg.setId(student.getId());
-			hg.setFirst(student.getFirst());
-			hg.setLast(student.getLast());
-			hg.setEmail(student.getEmail());
-			hg.setGender(student.getGender());
-			hg.setStudentCode(student.getStudentCode());
-			studentRepo.save(hg);
-			
-			codelesson.getStudents().add(student);
-			student.getStudentsLesson().add(codelesson);
-			
-			lessonStudentRepo.save(codelesson);
-			return true;
-		}
-		else if(access.equals(AccessModification.MODIFY)) {
-			lessonStudentRepo.save(codelesson);
-			return true;
-		}
-		else {
-			lessonStudentRepo.delete(codelesson);
-			return true;
+	public void modifyTeacher(Teacher teacher, Student student, AccessModification access) throws SaveAttributeException {	
+		try {
+			if(access.equals(AccessModification.ADD)) {
+				Student hg = new Student();
+				hg.setId(student.getId());
+				hg.setFirst(student.getFirst());
+				hg.setLast(student.getLast());
+				hg.setEmail(student.getEmail());
+				hg.setGender(student.getGender());
+				hg.setStudentCode(student.getStudentCode());
+				
+				Teacher mn = new Teacher();
+				mn.setId(teacher.getId());
+				mn.setUsername(teacher.getUsername());
+				mn.setGender(teacher.getGender());
+				mn.setEmail(teacher.getEmail());
+				mn.setCodeTeacher(teacher.getCodeTeacher());
+				teacherRepo.save(mn);
+				
+				mn.getStudents().add(hg);
+				hg.getTeachers().add(mn);
+				
+				studentRepo.save(hg);
+			}
+			else {
+				studentRepo.delete(student);
+			}
+		}catch(Exception e) {
+			throw new SaveAttributeException("Cannot modify this teacher, maybe student /or teacher is not found");
 		}
 	}
 	
 	@Transactional
-	public boolean modifyStudentArrive(Student student, ArrivalStudent arrive, AccessModification access) {
-		if(access.equals(AccessModification.ADD)) {
-//			ArrivalStudent mn = new ArrivalStudent();
-//			mn.setId(arrive.getId());
-//			mn.setArrive(arrive.getArrive());	
-			Student hg = new Student();
-			hg.setId(student.getId());
-			hg.setFirst(student.getFirst());
-			hg.setLast(student.getLast());
-			hg.setEmail(student.getEmail());
-			hg.setGender(student.getGender());
-			hg.setStudentCode(student.getStudentCode());
-			studentRepo.save(hg);	
-			
-			arrive.getStudents().add(hg);
-			hg.getStudentsArrive().add(arrive);
-
-			arriveStudentRepo.save(arrive);
-			return true;
-		}
-		else {
-			arriveStudentRepo.delete(arrive);
-			return true;
+	public void modifyStudentLesson(Student student, StudentLesson codelesson, AccessModification access) throws SaveAttributeException {
+		try {
+			if(access.equals(AccessModification.ADD)) {
+	//			StudentLesson mn = new StudentLesson();
+	//			mn.setId(codelesson.getId());
+	//			mn.setCodeLesson(codelesson.getCodeLesson());
+	//			mn.setLesson(codelesson.getLesson());
+	//			mn.setTypeLesson(codelesson.getTypeLesson());
+				Student hg = new Student();
+				hg.setId(student.getId());
+				hg.setFirst(student.getFirst());
+				hg.setLast(student.getLast());
+				hg.setEmail(student.getEmail());
+				hg.setGender(student.getGender());
+				hg.setStudentCode(student.getStudentCode());
+				studentRepo.save(hg);
+				
+				codelesson.setStudents(hg);
+				hg.getStudentsLesson().add(codelesson);
+				
+				lessonStudentRepo.save(codelesson);
+			}
+			else if(access.equals(AccessModification.MODIFY)) {
+				lessonStudentRepo.save(codelesson);
+			}
+			else {
+				lessonStudentRepo.delete(codelesson);
+			}
+		}catch(Exception e) {
+			throw new SaveAttributeException("Cannot modify this study, maybe study code has been already /or study is not found");
 		}
 	}
 	
-	public boolean delete(Student student) {
+	@Transactional
+	public void modifyStudentArrive(Student student, ArrivalStudent arrive, AccessModification access) throws SaveAttributeException {
+		try {
+			if(access.equals(AccessModification.ADD)) {
+	//			ArrivalStudent mn = new ArrivalStudent();
+	//			mn.setId(arrive.getId());
+	//			mn.setArrive(arrive.getArrive());	
+				Student hg = new Student();
+				hg.setId(student.getId());
+				hg.setFirst(student.getFirst());
+				hg.setLast(student.getLast());
+				hg.setEmail(student.getEmail());
+				hg.setGender(student.getGender());
+				hg.setStudentCode(student.getStudentCode());
+				studentRepo.save(hg);	
+				
+				arrive.setStudentArrive(hg);
+				hg.getStudentsArrive().add(arrive);
+	
+				arriveStudentRepo.save(arrive);
+			}
+			else {
+				arriveStudentRepo.delete(arrive);
+			}
+		}catch(Exception e) {
+			throw new SaveAttributeException("Cannot modify this arrive, maybe student is not found");
+		}
+	}
+	
+	@Transactional
+	public void delete(Student student) throws AttributeNotFoundException {
 		try {
 			studentRepo.delete(student);
-			return true;
 		}
 		catch(Exception e) {
-			return false;
+			throw new AttributeNotFoundException("Student not found !");
 		}
 	}
 }

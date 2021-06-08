@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -24,12 +25,11 @@ public class ArrivalTeacher {
 	private Long id;
 	@Column(columnDefinition="TIMESTAMP")
 	private LocalDateTime arrive;
-	@ManyToMany(cascade= {CascadeType.MERGE})
+	@ManyToOne
 	@JoinTable(name="Arrive_Teacher", joinColumns= {@JoinColumn(name="Arrive_Id")}, inverseJoinColumns = {@JoinColumn(name="Teacher_Id")})
-	private Set<Teacher> teacherArrive;
+	private Teacher teacherArrive;
 	public ArrivalTeacher() {
 		super();
-		this.teacherArrive = new HashSet<>();
 	}
 	public Long getId() {
 		return id;
@@ -43,10 +43,10 @@ public class ArrivalTeacher {
 	public void setArrive(LocalDateTime arrive) {
 		this.arrive = arrive;
 	}
-	public Set<Teacher> getTeacherArrive() {
+	public Teacher getTeacherArrive() {
 		return teacherArrive;
 	}
-	public void setTeacherArrive(Set<Teacher> teacherArrive) {
+	public void setTeacherArrive(Teacher teacherArrive) {
 		this.teacherArrive = teacherArrive;
 	}
 }

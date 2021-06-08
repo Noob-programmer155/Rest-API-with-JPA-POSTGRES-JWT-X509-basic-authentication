@@ -12,4 +12,5 @@ import com.amrTm.restApiJpaJwtX509Authentication.entity.StudentLesson;
 public interface LessonStudentRepo extends JpaRepository<StudentLesson,Long>{
 	public Optional<StudentLesson> findByCodeLesson(String codeLesson);
 	public List<StudentLesson> findAllByTypeLesson(String typeLesson);
+	
 }

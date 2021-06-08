@@ -1,16 +1,12 @@
 package com.amrTm.restApiJpaJwtX509Authentication.entity;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -21,17 +17,17 @@ public class TeacherLesson {
 	@GeneratedValue
 	private Long id;
 	@NotBlank(message="code lesson must be included")
+	@Column(unique=true)
 	private String codeLesson;
 	@NotBlank(message="type lesson must be included")
 	private String typeLesson;
 	@NotBlank(message="lesson must be included")
 	private String lesson;
-	@ManyToMany(cascade= {CascadeType.MERGE})
+	@ManyToOne
 	@JoinTable(name="Lesson_Teacher", joinColumns= {@JoinColumn(name="Lesson_Id")}, inverseJoinColumns = {@JoinColumn(name="Teacher_Id")})
-	private Set<Teacher> teacherLesson;
+	private Teacher teacherLesson;
 	public TeacherLesson() {
 		super();
-		this.teacherLesson = new HashSet<>();
 	}
 	public Long getId() {
 		return id;
@@ -57,10 +53,10 @@ public class TeacherLesson {
 	public void setLesson(String lesson) {
 		this.lesson = lesson;
 	}
-	public Set<Teacher> getTeacherLesson() {
+	public Teacher getTeacherLesson() {
 		return teacherLesson;
 	}
-	public void setTeacherLesson(Set<Teacher> teacherLesson) {
+	public void setTeacherLesson(Teacher teacherLesson) {
 		this.teacherLesson = teacherLesson;
 	}
 }

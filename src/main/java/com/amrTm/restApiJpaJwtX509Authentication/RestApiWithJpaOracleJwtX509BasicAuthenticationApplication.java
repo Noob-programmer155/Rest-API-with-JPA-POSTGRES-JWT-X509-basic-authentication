@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.ArrivalStudent;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.GenderType;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Student;
+import com.amrTm.restApiJpaJwtX509Authentication.entity.StudentLesson;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
 import com.amrTm.restApiJpaJwtX509Authentication.services.TeacherService;
 import com.amrTm.restApiJpaJwtX509Authentication.services.AccessModification;
@@ -68,16 +69,20 @@ public class RestApiWithJpaOracleJwtX509BasicAuthenticationApplication implement
 		e.setGender(GenderType.MALE);
 		e.setStudentCode("L200190150");
 		studentService.modify(e, e.getStudentCode());
-		Student gf = studentService.get("L200190150").get();
+		Student gf = studentService.get("L200190150");
 		ArrivalStudent bf = new ArrivalStudent();
 		bf.setArrive(LocalDateTime.now());
-		if(studentService.modifyStudentArrive(gf, bf, AccessModification.ADD)) {
-			ArrivalStudent bf1 = new ArrivalStudent();
-			bf.setArrive(LocalDateTime.now());
-			studentService.modifyStudentArrive(gf, bf1, AccessModification.ADD);
-//			ArrivalStudent jh = studentService.getArrive(4l);
-//			studentService.modifyStudentArrive(gf, jh, AccessModification.DELETE);
-		}
+		studentService.modifyStudentArrive(gf, bf, AccessModification.ADD);
+		ArrivalStudent bf1 = new ArrivalStudent();
+		bf.setArrive(LocalDateTime.now());
+		studentService.modifyStudentArrive(gf, bf1, AccessModification.ADD);
+		ArrivalStudent jh = studentService.getArrive(4l);
+		studentService.modifyStudentArrive(gf, jh, AccessModification.DELETE);
+		StudentLesson hgs = new StudentLesson();
+		hgs.setLesson("Java Learn");
+		hgs.setCodeLesson("J12");
+		hgs.setTypeLesson("Informatics");
+		studentService.modifyStudentLesson(gf, hgs, AccessModification.ADD);
 		Teacher f = new Teacher();
 		f.setUsername("Arrijal");
 		f.setEmail("dfjhdsjkfn");

@@ -1,17 +1,18 @@
 package com.amrTm.restApiJpaJwtX509Authentication.entity;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -31,22 +32,23 @@ public class Teacher {
 	@NotBlank(message="gender must be included")
 	private GenderType gender;
 	@NotBlank(message="teacher code must be included")
+	@Column(unique=true)
 	private String codeTeacher;
 	@NotBlank(message="email must be included")
-//	@Email(message="Must be a valid email", regexp="{email}")
+//	@Email(message="Must be a valid email", regexp="${email}")
+	@Column(unique=true)
 	private String email;
-	@ManyToMany(mappedBy="teacherLesson")
-	private Set<TeacherLesson> teacherLes;
-	@ManyToMany(mappedBy="teacherArrive")
-	private Set<ArrivalTeacher> teacherArr;
-	@ManyToMany(cascade= {CascadeType.MERGE})
-	@JoinTable(name="Scholl_Members", joinColumns= {@JoinColumn(name="Teacher_Id")}, inverseJoinColumns= {@JoinColumn(name="Student_Id")})
+	@OneToMany(mappedBy="teacherLesson", cascade= {CascadeType.MERGE,CascadeType.PERSIST})
+	private List<TeacherLesson> teacherLes;
+	@OneToMany(mappedBy="teacherArrive", cascade= {CascadeType.MERGE, CascadeType.PERSIST})
+	private List<ArrivalTeacher> teacherArr;
+	@ManyToMany(mappedBy="teachers")
 	@JsonIgnore
 	private Set<Student> students;
 	public Teacher() {
 		super();
-		this.teacherLes = new HashSet<>();
-		this.teacherArr = new HashSet<>();
+		this.teacherLes = new LinkedList<>();
+		this.teacherArr = new LinkedList<>();
 		this.students = new HashSet<>();
 		// TODO Auto-generated constructor stub
 	}
@@ -67,9 +69,6 @@ public class Teacher {
 	}
 	public void setCodeTeacher(String codeTeacher) {
 		this.codeTeacher = codeTeacher;
-	}
-	public Set<TeacherLesson> getLesson() {
-		return teacherLes;
 	}
 	public Set<Student> getStudents() {
 		return students;
@@ -96,10 +95,7 @@ public class Teacher {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	public Set<ArrivalTeacher> getArrival() {
-		return teacherArr;
-	}
-	public Set<TeacherLesson> getTeacherLesson() {
+	public List<TeacherLesson> getTeacherLesson() {
 		return teacherLes;
 	}
 //	public void addLesson(Lesson lesson) {
@@ -112,7 +108,7 @@ public class Teacher {
 //		this.teacherLes.remove(lesson);
 //		lesson.removeLesson(this);
 //	}
-	public Set<ArrivalTeacher> getTeachersArrive() {
+	public List<ArrivalTeacher> getTeachersArrive() {
 		return teacherArr;
 	}
 //	public void addArrive(Arrival arrive) {
@@ -125,10 +121,10 @@ public class Teacher {
 //		this.teacherArr.remove(arrive);
 //		arrive.removeArrive(this);
 //	}
-	public void setTeacherLesson(Set<TeacherLesson> teacherLes) {
+	public void setTeacherLesson(List<TeacherLesson> teacherLes) {
 		this.teacherLes = teacherLes;
 	}
-	public void setTeachersArrive(Set<ArrivalTeacher> teacherArr) {
+	public void setTeachersArrive(List<ArrivalTeacher> teacherArr) {
 		this.teacherArr = teacherArr;
 	}
 	public void setStudents(Set<Student> students) {

@@ -1,18 +1,14 @@
 package com.amrTm.restApiJpaJwtX509Authentication.entity;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -25,12 +21,11 @@ public class ArrivalStudent {
 	private Long id;
 	@Column(columnDefinition="TIMESTAMP")
 	private LocalDateTime arrive;
-	@ManyToMany(cascade= {CascadeType.MERGE})
+	@ManyToOne
 	@JoinTable(name="Arrive_Student", joinColumns= {@JoinColumn(name="Arrive_Id")}, inverseJoinColumns = {@JoinColumn(name="Student_Id")})
-	private Set<Student> studentArrive;
+	private Student studentArrive;
 	public ArrivalStudent() {
 		super();
-		this.studentArrive = new HashSet<>();
 	}
 	public Long getId() {
 		return id;
@@ -43,9 +38,6 @@ public class ArrivalStudent {
 	}
 	public void setArrive(LocalDateTime arrive) {
 		this.arrive = arrive;
-	}
-	public Set<Student> getStudents() {
-		return studentArrive;
 	}
 //	public void addArrive(Student student) {
 //		if(this.studentArrive.contains(student)) {return ;}
@@ -67,4 +59,10 @@ public class ArrivalStudent {
 //		this.tArrive.remove(teacher);
 //		teacher.removeArrive(this);
 //	}
+	public Student getStudentArrive() {
+		return studentArrive;
+	}
+	public void setStudentArrive(Student studentArrive) {
+		this.studentArrive = studentArrive;
+	}
 }
