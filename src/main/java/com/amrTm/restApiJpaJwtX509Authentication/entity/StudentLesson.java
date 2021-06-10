@@ -13,9 +13,6 @@ import javax.validation.constraints.NotNull;
 @Entity
 public class StudentLesson {
 	@Id
-	@NotNull
-	@GeneratedValue
-	private Long id;
 	@NotBlank(message="code lesson must be included")
 	@Column(unique=true)
 	private String codeLesson;
@@ -28,12 +25,6 @@ public class StudentLesson {
 	private Student studentLesson;
 	public StudentLesson() {
 		super();
-	}
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
 	}
 	public String getCodeLesson() {
 		return codeLesson;

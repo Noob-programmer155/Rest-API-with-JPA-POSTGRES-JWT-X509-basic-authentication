@@ -39,21 +39,18 @@ public class RestApiWithJpaOracleJwtX509BasicAuthenticationApplication implement
 	public void run(String... args) throws Exception {
 		List<Student> d = new ArrayList<>();
 		Student a = new Student();
-		a.setId(1l);
 		a.setFirst("Amar");
 		a.setLast("rijal");
 		a.setEmail("sssada");
 		a.setGender(GenderType.MALE);
 		a.setStudentCode("L200190149");
 		Student b = new Student();
-		b.setId(2l);
 		b.setFirst("Doni");
 		b.setLast("john");
 		b.setEmail("sssasaa");
 		b.setGender(GenderType.MALE);
 		b.setStudentCode("L200190150");
 		Student c = new Student();
-		c.setId(3l);
 		c.setFirst("Tiara");
 		c.setLast("Khadijah");
 		c.setEmail("ssddfs");

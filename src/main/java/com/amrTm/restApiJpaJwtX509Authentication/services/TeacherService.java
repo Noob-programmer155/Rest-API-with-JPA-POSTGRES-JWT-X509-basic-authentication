@@ -2,12 +2,9 @@ package com.amrTm.restApiJpaJwtX509Authentication.services;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
@@ -16,11 +13,9 @@ import com.amrTm.restApiJpaJwtX509Authentication.entity.ArrivalTeacher;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.TeacherLesson;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.AttributeNotFoundException;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.SaveAttributeException;
-import com.amrTm.restApiJpaJwtX509Authentication.entity.Student;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
 import com.amrTm.restApiJpaJwtX509Authentication.repo.ArriveTeacherRepo;
 import com.amrTm.restApiJpaJwtX509Authentication.repo.LessonTeacherRepo;
-import com.amrTm.restApiJpaJwtX509Authentication.repo.StudentRepo;
 import com.amrTm.restApiJpaJwtX509Authentication.repo.TeacherRepo;
 
 @Service
@@ -34,15 +29,19 @@ public class TeacherService {
 	}
 	
 	public List<Teacher> getAll(List<String> TeacherCode){
-		return teacherRepo.findAllByTeacherCode(TeacherCode);
+		return teacherRepo.findAllById(TeacherCode);
 	}
 	
 	public Teacher get(String code) throws AttributeNotFoundException{
-		return teacherRepo.findByCodeTeacher(code).orElseThrow(()-> new AttributeNotFoundException("Teacher not found !"));
+		return teacherRepo.findById(code).orElseThrow(()-> new AttributeNotFoundException("Teacher not found !"));
 	}
 	
 	public TeacherLesson getLesson(String codeLesson) throws AttributeNotFoundException{
-		return lessonTeacherRepo.findByCodeLesson(codeLesson).orElseThrow(()-> new AttributeNotFoundException("Study not found !"));
+		return lessonTeacherRepo.findById(codeLesson).orElseThrow(()-> new AttributeNotFoundException("Study not found !"));
+	}
+	
+	public List<TeacherLesson> getLessonOnTeacher(String code){
+		return teacherRepo.findAllLessonOnTeacherId(code).getTeacherLesson();
 	}
 	
 	public List<TeacherLesson> getLessonByType(String typeLesson){
@@ -128,11 +127,10 @@ public class TeacherService {
 		try {
 			if(access.equals(AccessModification.ADD)) {
 				Teacher mn = new Teacher();
-				mn.setId(teacher.getId());
+				mn.setCodeTeacher(teacher.getCodeTeacher());
 				mn.setUsername(teacher.getUsername());
 				mn.setGender(teacher.getGender());
 				mn.setEmail(teacher.getEmail());
-				mn.setCodeTeacher(teacher.getCodeTeacher());
 				teacherRepo.save(mn);
 				
 				lesson.setTeacherLesson(mn);
@@ -156,11 +154,10 @@ public class TeacherService {
 		try {	
 			if(access.equals(AccessModification.ADD)) {
 				Teacher mn = new Teacher();
-				mn.setId(teacher.getId());
+				mn.setCodeTeacher(teacher.getCodeTeacher());
 				mn.setUsername(teacher.getUsername());
 				mn.setGender(teacher.getGender());
 				mn.setEmail(teacher.getEmail());
-				mn.setCodeTeacher(teacher.getCodeTeacher());
 				teacherRepo.save(mn);
 				
 				arrive.setTeacherArrive(mn);

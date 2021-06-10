@@ -9,31 +9,25 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name="Teacher")
 public class Teacher {
 	@Id
-	@NotNull
-	@GeneratedValue
-	private Long id;
+	@NotBlank(message="teacher code must be included")
+	@Column(unique=true)
+	private String codeTeacher;
 	@NotBlank(message="username must be included")
 	private String username;
 	@Enumerated
 	@NotBlank(message="gender must be included")
 	private GenderType gender;
-	@NotBlank(message="teacher code must be included")
-	@Column(unique=true)
-	private String codeTeacher;
 	@NotBlank(message="email must be included")
 //	@Email(message="Must be a valid email", regexp="${email}")
 	@Column(unique=true)
@@ -51,12 +45,6 @@ public class Teacher {
 		this.teacherArr = new LinkedList<>();
 		this.students = new HashSet<>();
 		// TODO Auto-generated constructor stub
-	}
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
 	}
 	public String getUsername() {
 		return username;

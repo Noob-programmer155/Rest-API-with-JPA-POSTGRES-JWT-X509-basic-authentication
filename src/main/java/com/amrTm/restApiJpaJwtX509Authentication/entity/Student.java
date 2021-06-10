@@ -9,7 +9,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -23,9 +22,9 @@ import javax.validation.constraints.NotNull;
 @Table(name="Student")
 public class Student {
 	@Id
-	@NotNull
-	@GeneratedValue
-	private Long id;
+	@NotBlank(message="student code must be included")
+	@Column(unique=true)
+	private String studentCode;
 	@NotBlank(message="first name must be included")
 	private String first;
 	@NotBlank(message="last name must be included")
@@ -37,9 +36,6 @@ public class Student {
 //	@Email(message="Must be a valid email", regexp="${email}")
 	@Column(unique=true)
 	private String email;
-	@NotBlank(message="student code must be included")
-	@Column(unique=true)
-	private String studentCode;
 	@OneToMany(mappedBy="studentLesson", cascade= {CascadeType.MERGE,CascadeType.PERSIST})
 	private List<StudentLesson> studentLes;
 	@OneToMany(mappedBy="studentArrive", cascade= {CascadeType.MERGE,CascadeType.PERSIST})
@@ -53,12 +49,6 @@ public class Student {
 		this.studentArr = new LinkedList<>();
 		this.teachers = new HashSet<>();
 		// TODO Auto-generated constructor stub
-	}
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
 	}
 	public String getFirst() {
 		return first;

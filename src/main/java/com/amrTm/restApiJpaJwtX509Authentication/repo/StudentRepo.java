@@ -1,12 +1,7 @@
 package com.amrTm.restApiJpaJwtX509Authentication.repo;
 
-import java.util.List;
-import java.util.Optional;
-
 import javax.transaction.Transactional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,16 +10,13 @@ import org.springframework.stereotype.Repository;
 
 import com.amrTm.restApiJpaJwtX509Authentication.entity.GenderType;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Student;
-import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
 
 @Repository
-public interface StudentRepo extends JpaRepository<Student,Long> {
-	public Optional<Student> findByStudentCode(String studentCode);
-	Page<Student> findByStudentsArrive(Long arriveId, Pageable pageable);
-	@Modifying
-	@Transactional
-	@Query("select u from Student u where u.studentCode in :studentCodes")
-	public List<Student> findAllByStudentCode(@Param("studentCodes") List<String> studentCodes);
+public interface StudentRepo extends JpaRepository<Student,String> {
+//	@Modifying
+//	@Transactional
+//	@Query("select u from Student u where u.studentCode in :studentCodes")
+//	public List<Student> findAllByStudentCode(@Param("studentCodes") List<String> studentCodes);
 	@Modifying
 	@Transactional
 	@Query("update Student u set u.first = :first, u.last = :last, u.gender = :gender, u.email = :email where u.studentCode = :code")
@@ -33,4 +25,8 @@ public interface StudentRepo extends JpaRepository<Student,Long> {
 						@Param("gender") GenderType gender,
 						@Param("email") String email,
 						@Param("code") String kode);
+	@Modifying
+	@Transactional
+	@Query("select a from Student a join fetch a.studentLes t where a.studentCode = :id")
+	public Student findAllLessonOnStudentId(@Param("id") String id);
 }

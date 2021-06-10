@@ -2,7 +2,6 @@ package com.amrTm.restApiJpaJwtX509Authentication.services;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
@@ -12,8 +11,8 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 
 import com.amrTm.restApiJpaJwtX509Authentication.entity.ArrivalStudent;
-import com.amrTm.restApiJpaJwtX509Authentication.entity.StudentLesson;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Student;
+import com.amrTm.restApiJpaJwtX509Authentication.entity.StudentLesson;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.AttributeNotFoundException;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.SaveAttributeException;
@@ -43,15 +42,19 @@ public class StudentService {
 	}
 	
 	public List<Student> getAll(List<String> studentCode){
-		return studentRepo.findAllByStudentCode(studentCode);
+		return studentRepo.findAllById(studentCode);
 	}
 
 	public Student get(String code) throws AttributeNotFoundException{
-		return studentRepo.findByStudentCode(code).orElseThrow(()->new AttributeNotFoundException("Student cannot found !"));
+		return studentRepo.findById(code).orElseThrow(()->new AttributeNotFoundException("Student cannot found !"));
 	}
 	
 	public StudentLesson getLesson(String codeLesson) throws AttributeNotFoundException{
-		return lessonStudentRepo.findByCodeLesson(codeLesson).orElseThrow(()->new AttributeNotFoundException("Study cannot found !"));
+		return lessonStudentRepo.findById(codeLesson).orElseThrow(()->new AttributeNotFoundException("Study cannot found !"));
+	}
+	
+	public List<StudentLesson> getLessonOnStudent(String codeStudent){
+		return studentRepo.findAllLessonOnStudentId(codeStudent).getStudentsLesson();
 	}
 	
 	public List<StudentLesson> getLessonByType(String typeLesson){
@@ -133,19 +136,17 @@ public class StudentService {
 		try {
 			if(access.equals(AccessModification.ADD)) {
 				Student hg = new Student();
-				hg.setId(student.getId());
+				hg.setStudentCode(student.getStudentCode());
 				hg.setFirst(student.getFirst());
 				hg.setLast(student.getLast());
 				hg.setEmail(student.getEmail());
 				hg.setGender(student.getGender());
-				hg.setStudentCode(student.getStudentCode());
 				
 				Teacher mn = new Teacher();
-				mn.setId(teacher.getId());
+				mn.setCodeTeacher(teacher.getCodeTeacher());
 				mn.setUsername(teacher.getUsername());
 				mn.setGender(teacher.getGender());
 				mn.setEmail(teacher.getEmail());
-				mn.setCodeTeacher(teacher.getCodeTeacher());
 				teacherRepo.save(mn);
 				
 				mn.getStudents().add(hg);
@@ -171,12 +172,11 @@ public class StudentService {
 	//			mn.setLesson(codelesson.getLesson());
 	//			mn.setTypeLesson(codelesson.getTypeLesson());
 				Student hg = new Student();
-				hg.setId(student.getId());
+				hg.setStudentCode(student.getStudentCode());
 				hg.setFirst(student.getFirst());
 				hg.setLast(student.getLast());
 				hg.setEmail(student.getEmail());
 				hg.setGender(student.getGender());
-				hg.setStudentCode(student.getStudentCode());
 				studentRepo.save(hg);
 				
 				codelesson.setStudents(hg);
@@ -203,12 +203,11 @@ public class StudentService {
 	//			mn.setId(arrive.getId());
 	//			mn.setArrive(arrive.getArrive());	
 				Student hg = new Student();
-				hg.setId(student.getId());
+				hg.setStudentCode(student.getStudentCode());
 				hg.setFirst(student.getFirst());
 				hg.setLast(student.getLast());
 				hg.setEmail(student.getEmail());
 				hg.setGender(student.getGender());
-				hg.setStudentCode(student.getStudentCode());
 				studentRepo.save(hg);	
 				
 				arrive.setStudentArrive(hg);
