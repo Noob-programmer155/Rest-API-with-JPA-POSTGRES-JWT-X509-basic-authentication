@@ -2,6 +2,7 @@ package com.amrTm.restApiJpaJwtX509Authentication.security;
 
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -12,6 +13,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+
+import com.amrTm.restApiJpaJwtX509Authentication.entity.Role;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -34,10 +37,10 @@ public class TokenProvider {
 		secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
 	}
 	
-	public String createToken(String username) {
-		UserDetails admin = getUserDetails(username);
-		Claims claim = Jwts.claims().setSubject(admin.getUsername());
-		claim.put(admin.getPassword(), admin.getAuthorities());
+	public String createToken(String username, String email, List<Role> roles) {
+		Claims claim = Jwts.claims().setSubject(username);
+		claim.put("email", email);
+		claim.put("Auth", roles);
 		Date now = new Date();
 		Date expired = new Date(now.getTime()+validity);
 		return Jwts.builder()
@@ -64,9 +67,5 @@ public class TokenProvider {
 	public boolean validateToken(String token) throws JwtException, IllegalArgumentException{
 		Jwts.parser().setSigningKey(secretKey).parseClaimsJwt(token);
 		return true;
-	}
-	
-	private UserDetails getUserDetails(String name) {
-		return user.loadUserByUsername(name);
 	}
 }

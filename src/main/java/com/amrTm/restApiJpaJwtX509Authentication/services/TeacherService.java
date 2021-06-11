@@ -94,13 +94,13 @@ public class TeacherService {
 		}
 	}
 	
-	public void saveArrive(ArrivalTeacher arrive) throws SaveAttributeException {
-		try {
-			arriveTeacherRepo.save(arrive);}
-		catch(Exception e) {
-			throw new SaveAttributeException("Cannot saving this arrive, please retry to input");
-		}
-	}
+//	public void saveArrive(ArrivalTeacher arrive) throws SaveAttributeException {
+//		try {
+//			arriveTeacherRepo.save(arrive);}
+//		catch(Exception e) {
+//			throw new SaveAttributeException("Cannot saving this arrive, please retry to input");
+//		}
+//	}
 	
 	public void modify(Teacher Teacher, String code) throws SaveAttributeException{
 		try {
@@ -126,6 +126,11 @@ public class TeacherService {
 	public void modifyTeacherLesson(Teacher teacher, TeacherLesson lesson, AccessModification access) throws SaveAttributeException {
 		try {
 			if(access.equals(AccessModification.ADD)) {
+				TeacherLesson ls = new TeacherLesson();
+				ls.setCodeLesson(lesson.getCodeLesson());
+				ls.setLesson(lesson.getLesson());
+				ls.setTypeLesson(lesson.getTypeLesson());
+				
 				Teacher mn = new Teacher();
 				mn.setCodeTeacher(teacher.getCodeTeacher());
 				mn.setUsername(teacher.getUsername());
@@ -133,10 +138,10 @@ public class TeacherService {
 				mn.setEmail(teacher.getEmail());
 				teacherRepo.save(mn);
 				
-				lesson.setTeacherLesson(mn);
-				mn.getTeacherLesson().add(lesson);
+				ls.setTeacherLesson(mn);
+				mn.getTeacherLesson().add(ls);
 				
-				lessonTeacherRepo.save(lesson);
+				lessonTeacherRepo.save(ls);
 			}
 			else if(access.equals(AccessModification.MODIFY)) {
 				lessonTeacherRepo.save(lesson);
@@ -150,7 +155,7 @@ public class TeacherService {
 	}
 	
 	@Transactional
-	public void modifyStudentArrive(Teacher teacher, ArrivalTeacher arrive, AccessModification access) throws SaveAttributeException {
+	public void modifyTeacherArrive(Teacher teacher, ArrivalTeacher arrive, AccessModification access) throws SaveAttributeException {
 		try {	
 			if(access.equals(AccessModification.ADD)) {
 				Teacher mn = new Teacher();

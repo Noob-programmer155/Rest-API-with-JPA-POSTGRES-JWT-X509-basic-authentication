@@ -25,14 +25,15 @@ public class MailService {
 		javaMailSender.send(msg);
 	}
 	
-//	public void sendValidationMessage(String to, String name, String token, String id) throws MessagingException {
-//		MimeMessage mime = javaMailSender.createMimeMessage();
-//		MimeMessageHelper msg = new MimeMessageHelper(mime);
-//		msg.setTo(to);
-//		msg.setSubject("Email Validation");
-//		msg.setText("<h4>Hello <strong>"+name+"</strong>,</h4><br/><hr/>"
-//				+ "<h6>Please confirm your email with this link:</h6><br/>"
-//				+ "<a href='http://localhost:6753/signup/confirm?token="+token+"&id="+id+"' type='button'>click me</a>", true);
-//		javaMailSender.send(mime);
-//	}
+	public String sendValidationMessage(String to, String name, String token) throws MessagingException {
+		MimeMessage mime = javaMailSender.createMimeMessage();
+		MimeMessageHelper msg = new MimeMessageHelper(mime);
+		msg.setTo(to);
+		msg.setSubject("Email Validation");
+		msg.setText("<h4>Hello <strong>"+name+"</strong>,</h4><br/><hr/>"
+				+ "<h6>Please confirm your email with this link:</h6><br/>"
+				+ "<a href='javascript:' onclick=\"location.href='http://localhost:6753/signup/confirm?sa="+token+"'\" type='button'>click me</a>", true);
+		javaMailSender.send(mime);
+		return "Message success to send";
+	}
 }

@@ -103,13 +103,13 @@ public class StudentService {
 		catch(Exception e) {throw new SaveAttributeException("Cannot saving this studies, maybe study with the same code and name has been saved");}
 	}
 	
-	public void saveArrive(ArrivalStudent arrive) throws SaveAttributeException {
-		try {
-			arriveStudentRepo.save(arrive);}
-		catch(Exception e) {
-			throw new SaveAttributeException("Cannot saving this arrive, please retry to input");
-		}
-	}
+//	public void saveArrive(ArrivalStudent arrive) throws SaveAttributeException {
+//		try {
+//			arriveStudentRepo.save(arrive);}
+//		catch(Exception e) {
+//			throw new SaveAttributeException("Cannot saving this arrive, please retry to input");
+//		}
+//	}
 	
 	public void modify(Student student, String code) throws SaveAttributeException{
 		try {
@@ -166,11 +166,11 @@ public class StudentService {
 	public void modifyStudentLesson(Student student, StudentLesson codelesson, AccessModification access) throws SaveAttributeException {
 		try {
 			if(access.equals(AccessModification.ADD)) {
-	//			StudentLesson mn = new StudentLesson();
-	//			mn.setId(codelesson.getId());
-	//			mn.setCodeLesson(codelesson.getCodeLesson());
-	//			mn.setLesson(codelesson.getLesson());
-	//			mn.setTypeLesson(codelesson.getTypeLesson());
+				StudentLesson mn = new StudentLesson();
+				mn.setCodeLesson(codelesson.getCodeLesson());
+				mn.setLesson(codelesson.getLesson());
+				mn.setTypeLesson(codelesson.getTypeLesson());
+				
 				Student hg = new Student();
 				hg.setStudentCode(student.getStudentCode());
 				hg.setFirst(student.getFirst());
