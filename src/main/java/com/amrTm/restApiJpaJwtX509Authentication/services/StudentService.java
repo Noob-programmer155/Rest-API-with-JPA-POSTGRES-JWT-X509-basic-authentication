@@ -30,11 +30,12 @@ public class StudentService {
 	private LessonStudentRepo lessonStudentRepo; 
 	
 	public StudentService(StudentRepo studentRepo, ArriveStudentRepo arriveStudentRepo,
-			LessonStudentRepo lessonStudentRepo) {
+			LessonStudentRepo lessonStudentRepo, TeacherRepo teacherRepo) {
 		super();
 		this.studentRepo = studentRepo;
 		this.arriveStudentRepo = arriveStudentRepo;
 		this.lessonStudentRepo = lessonStudentRepo;
+		this.teacherRepo = teacherRepo;
 	}
 
 	public List<Student> getAll() {
@@ -50,7 +51,7 @@ public class StudentService {
 	}
 	
 	public StudentLesson getLesson(String codeLesson) throws AttributeNotFoundException{
-		return lessonStudentRepo.findById(codeLesson).orElseThrow(()->new AttributeNotFoundException("Study cannot found !"));
+		return lessonStudentRepo.findById(codeLesson).orElseThrow(()->new AttributeNotFoundException("Lesson cannot found !"));
 	}
 	
 	public List<StudentLesson> getLessonOnStudent(String codeStudent){
@@ -77,7 +78,7 @@ public class StudentService {
 	
 	public void save(Student student) throws SaveAttributeException{
 		try {
-			studentRepo.save(student);
+			studentRepo.saveAndFlush(student);
 		}
 		catch(Exception w) {throw new SaveAttributeException("Cannot saving this student, please check your input /or maybe this student has been saved");}
 	}
@@ -91,7 +92,7 @@ public class StudentService {
 	
 	public void saveLesson(StudentLesson lesson) throws SaveAttributeException {
 		try {
-			lessonStudentRepo.save(lesson);}
+			lessonStudentRepo.saveAndFlush(lesson);}
 		catch(Exception e) {
 			throw new SaveAttributeException("Cannot saving this study, maybe study with the same code and name has been saved");
 		}
@@ -111,9 +112,10 @@ public class StudentService {
 //		}
 //	}
 	
-	public void modify(Student student, String code) throws SaveAttributeException{
+	public Student modify(Student student, String code) throws SaveAttributeException{
 		try {
 			studentRepo.update(student.getFirst(), student.getLast(), student.getGender(), student.getEmail(), code);
+			return studentRepo.getById(code);
 		}
 		catch(Exception e) {
 			throw new SaveAttributeException("Cannot modify this student, please check your input /or maybe email has been same with the other student");
@@ -132,30 +134,26 @@ public class StudentService {
 	}
 	
 	@Transactional
-	public void modifyTeacher(Teacher teacher, Student student, AccessModification access) throws SaveAttributeException {	
+	public void modifyTeacher(String codeteacher, String codeStudent,
+			AccessModification access) throws SaveAttributeException {	
 		try {
 			if(access.equals(AccessModification.ADD)) {
-				Student hg = new Student();
-				hg.setStudentCode(student.getStudentCode());
-				hg.setFirst(student.getFirst());
-				hg.setLast(student.getLast());
-				hg.setEmail(student.getEmail());
-				hg.setGender(student.getGender());
+				Teacher teacher = teacherRepo.getById(codeteacher);
+				Student hg = studentRepo.getById(codeStudent);
 				
-				Teacher mn = new Teacher();
-				mn.setCodeTeacher(teacher.getCodeTeacher());
-				mn.setUsername(teacher.getUsername());
-				mn.setGender(teacher.getGender());
-				mn.setEmail(teacher.getEmail());
-				teacherRepo.save(mn);
+				teacher.getStudents().add(hg);
+				hg.getTeachers().add(teacher);
 				
-				mn.getStudents().add(hg);
-				hg.getTeachers().add(mn);
-				
-				studentRepo.save(hg);
+				studentRepo.saveAndFlush(hg);
 			}
 			else {
-				studentRepo.delete(student);
+				Teacher teacher = teacherRepo.getById(codeteacher);
+				Student hg = studentRepo.getById(codeStudent);
+				
+				teacher.getStudents().remove(hg);
+				hg.getTeachers().remove(teacher);
+				
+				studentRepo.saveAndFlush(hg);
 			}
 		}catch(Exception e) {
 			throw new SaveAttributeException("Cannot modify this teacher, maybe student /or teacher is not found");
@@ -163,32 +161,23 @@ public class StudentService {
 	}
 	
 	@Transactional
-	public void modifyStudentLesson(Student student, StudentLesson codelesson, AccessModification access) throws SaveAttributeException {
+	public void modifyStudentLesson(String codeStudent, StudentLesson lesson,
+			AccessModification access) throws SaveAttributeException {
 		try {
 			if(access.equals(AccessModification.ADD)) {
-				StudentLesson mn = new StudentLesson();
-				mn.setCodeLesson(codelesson.getCodeLesson());
-				mn.setLesson(codelesson.getLesson());
-				mn.setTypeLesson(codelesson.getTypeLesson());
+				Student hg = studentRepo.getById(codeStudent);
+				StudentLesson mn = lessonStudentRepo.getById(lesson.getCodeLesson());
 				
-				Student hg = new Student();
-				hg.setStudentCode(student.getStudentCode());
-				hg.setFirst(student.getFirst());
-				hg.setLast(student.getLast());
-				hg.setEmail(student.getEmail());
-				hg.setGender(student.getGender());
-				studentRepo.save(hg);
+				hg.getStudentsLesson().add(mn);
+				mn.setStudents(hg);
 				
-				codelesson.setStudents(hg);
-				hg.getStudentsLesson().add(codelesson);
-				
-				lessonStudentRepo.save(codelesson);
+				lessonStudentRepo.saveAndFlush(mn);
 			}
 			else if(access.equals(AccessModification.MODIFY)) {
-				lessonStudentRepo.save(codelesson);
+				lessonStudentRepo.saveAndFlush(lesson);
 			}
 			else {
-				lessonStudentRepo.delete(codelesson);
+				lessonStudentRepo.delete(lesson);
 			}
 		}catch(Exception e) {
 			throw new SaveAttributeException("Cannot modify this study, maybe study code has been already /or study is not found");
@@ -196,24 +185,15 @@ public class StudentService {
 	}
 	
 	@Transactional
-	public void modifyStudentArrive(Student student, ArrivalStudent arrive, AccessModification access) throws SaveAttributeException {
+	public void modifyStudentArrive(String codeStudent, ArrivalStudent arrive, AccessModification access) throws SaveAttributeException {
 		try {
 			if(access.equals(AccessModification.ADD)) {
-	//			ArrivalStudent mn = new ArrivalStudent();
-	//			mn.setId(arrive.getId());
-	//			mn.setArrive(arrive.getArrive());	
-				Student hg = new Student();
-				hg.setStudentCode(student.getStudentCode());
-				hg.setFirst(student.getFirst());
-				hg.setLast(student.getLast());
-				hg.setEmail(student.getEmail());
-				hg.setGender(student.getGender());
-				studentRepo.save(hg);	
-				
+				Student hg = studentRepo.getById(codeStudent);
+	
 				arrive.setStudentArrive(hg);
 				hg.getStudentsArrive().add(arrive);
 	
-				arriveStudentRepo.save(arrive);
+				arriveStudentRepo.saveAndFlush(arrive);
 			}
 			else {
 				arriveStudentRepo.delete(arrive);

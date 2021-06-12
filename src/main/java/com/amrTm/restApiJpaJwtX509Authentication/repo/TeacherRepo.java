@@ -12,7 +12,7 @@ import com.amrTm.restApiJpaJwtX509Authentication.entity.GenderType;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
 
 @Repository
-public interface TeacherRepo extends JpaRepository<Teacher,String>{
+public interface TeacherRepo extends JpaRepository<Teacher,String>, TeacherRepoEntity{
 //	@Modifying
 //	@Transactional
 //	@Query("select u from Teacher u where u.codeTeacher in :codeTeacher")

@@ -2,7 +2,10 @@ package com.amrTm.restApiJpaJwtX509Authentication.services;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
 import org.springframework.data.domain.Sort;
@@ -10,6 +13,7 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 
 import com.amrTm.restApiJpaJwtX509Authentication.entity.ArrivalTeacher;
+import com.amrTm.restApiJpaJwtX509Authentication.entity.Student;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.TeacherLesson;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.AttributeNotFoundException;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.SaveAttributeException;
@@ -17,13 +21,25 @@ import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
 import com.amrTm.restApiJpaJwtX509Authentication.repo.ArriveTeacherRepo;
 import com.amrTm.restApiJpaJwtX509Authentication.repo.LessonTeacherRepo;
 import com.amrTm.restApiJpaJwtX509Authentication.repo.TeacherRepo;
+import com.amrTm.restApiJpaJwtX509Authentication.repo.TeacherRepoEntity;
 
 @Service
-public class TeacherService {
+public class TeacherService implements TeacherRepoEntity{
 	private TeacherRepo teacherRepo; 
 	private ArriveTeacherRepo arriveTeacherRepo;
 	private LessonTeacherRepo lessonTeacherRepo;
 	
+	@PersistenceContext
+	private EntityManager entityManager;
+	
+	public TeacherService(TeacherRepo teacherRepo, ArriveTeacherRepo arriveTeacherRepo,
+			LessonTeacherRepo lessonTeacherRepo) {
+		super();
+		this.teacherRepo = teacherRepo;
+		this.arriveTeacherRepo = arriveTeacherRepo;
+		this.lessonTeacherRepo = lessonTeacherRepo;
+	}
+
 	public List<Teacher> getAll(){
 		return teacherRepo.findAll(Sort.by(Order.asc("first")));
 	}
@@ -60,9 +76,10 @@ public class TeacherService {
 		return arriveTeacherRepo.getById(id);
 	}
 	
-	public void save(Teacher Teacher) throws SaveAttributeException{
+	public void save(Teacher Teacher) throws SaveAttributeException {
+//		teacherRepo.save(Teacher);
 		try {
-			teacherRepo.save(Teacher);
+			teacherRepo.saveAndFlush(Teacher);
 		}
 		catch(Exception w) {
 			throw new SaveAttributeException("Cannot saving this teacher, please check your input /or maybe this teacher has been saved");
@@ -80,7 +97,7 @@ public class TeacherService {
 	
 	public void saveLesson(TeacherLesson lesson) throws SaveAttributeException {
 		try {
-			lessonTeacherRepo.save(lesson);}
+			lessonTeacherRepo.saveAndFlush(lesson);}
 		catch(Exception e) {
 			throw new SaveAttributeException("Cannot saving this study, maybe study with the same code and name has been saved");
 		}
@@ -123,28 +140,19 @@ public class TeacherService {
 	}
 	
 	@Transactional
-	public void modifyTeacherLesson(Teacher teacher, TeacherLesson lesson, AccessModification access) throws SaveAttributeException {
+	public void modifyTeacherLesson(String codeTeacher, TeacherLesson lesson, AccessModification access) throws SaveAttributeException {
 		try {
 			if(access.equals(AccessModification.ADD)) {
-				TeacherLesson ls = new TeacherLesson();
-				ls.setCodeLesson(lesson.getCodeLesson());
-				ls.setLesson(lesson.getLesson());
-				ls.setTypeLesson(lesson.getTypeLesson());
+				Teacher mn = teacherRepo.getById(codeTeacher);
+				TeacherLesson ls = lessonTeacherRepo.getById(lesson.getCodeLesson());
 				
-				Teacher mn = new Teacher();
-				mn.setCodeTeacher(teacher.getCodeTeacher());
-				mn.setUsername(teacher.getUsername());
-				mn.setGender(teacher.getGender());
-				mn.setEmail(teacher.getEmail());
-				teacherRepo.save(mn);
-				
-				ls.setTeacherLesson(mn);
 				mn.getTeacherLesson().add(ls);
+				ls.setTeacherLesson(mn);
 				
-				lessonTeacherRepo.save(ls);
+				lessonTeacherRepo.saveAndFlush(ls);
 			}
 			else if(access.equals(AccessModification.MODIFY)) {
-				lessonTeacherRepo.save(lesson);
+				lessonTeacherRepo.saveAndFlush(lesson);
 			}
 			else {
 				lessonTeacherRepo.delete(lesson);
@@ -155,20 +163,15 @@ public class TeacherService {
 	}
 	
 	@Transactional
-	public void modifyTeacherArrive(Teacher teacher, ArrivalTeacher arrive, AccessModification access) throws SaveAttributeException {
+	public void modifyTeacherArrive(String codeTeacher, ArrivalTeacher arrive, AccessModification access) throws SaveAttributeException {
 		try {	
 			if(access.equals(AccessModification.ADD)) {
-				Teacher mn = new Teacher();
-				mn.setCodeTeacher(teacher.getCodeTeacher());
-				mn.setUsername(teacher.getUsername());
-				mn.setGender(teacher.getGender());
-				mn.setEmail(teacher.getEmail());
-				teacherRepo.save(mn);
+				Teacher mn = teacherRepo.getById(codeTeacher);
 				
 				arrive.setTeacherArrive(mn);
 				mn.getTeachersArrive().add(arrive);
 				
-				arriveTeacherRepo.save(arrive);
+				arriveTeacherRepo.saveAndFlush(arrive);
 			}
 			else {
 				arriveTeacherRepo.delete(arrive);
@@ -179,9 +182,13 @@ public class TeacherService {
 	}
 	
 	@Transactional
-	public void delete(Teacher Teacher) throws AttributeNotFoundException {
+	public void delete(String codeTeacher) throws AttributeNotFoundException {
 		try {
-			teacherRepo.delete(Teacher);
+			Teacher teacher = entityManager.find(Teacher.class, codeTeacher);
+			for(Student s  : teacher.getStudents()) {
+				s.removeTeacher(teacher);
+			}
+			entityManager.remove(teacher);
 		}
 		catch(Exception e) {
 			throw new AttributeNotFoundException("Teacher not found !");

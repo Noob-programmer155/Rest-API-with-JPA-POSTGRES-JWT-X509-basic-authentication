@@ -59,6 +59,11 @@ public class RestApiWithJpaOracleJwtX509BasicAuthenticationApplication implement
 		d.add(a);d.add(b);d.add(c);
 		
 		studentService.saveAll(d);
+		StudentLesson hgs = new StudentLesson();
+		hgs.setLesson("Java Learn");
+		hgs.setCodeLesson("J12");
+		hgs.setTypeLesson("Informatics");
+		studentService.saveLesson(hgs);
 		Student e = new Student();
 		e.setFirst("Donni");
 		e.setLast("johnsen");
@@ -69,24 +74,22 @@ public class RestApiWithJpaOracleJwtX509BasicAuthenticationApplication implement
 		Student gf = studentService.get("L200190150");
 		ArrivalStudent bf = new ArrivalStudent();
 		bf.setArrive(LocalDateTime.now());
-		studentService.modifyStudentArrive(gf, bf, AccessModification.ADD);
+		studentService.modifyStudentArrive(gf.getStudentCode(), bf, AccessModification.ADD);
 		ArrivalStudent bf1 = new ArrivalStudent();
-		bf.setArrive(LocalDateTime.now());
-		studentService.modifyStudentArrive(gf, bf1, AccessModification.ADD);
+		bf1.setArrive(LocalDateTime.now());
+		studentService.modifyStudentArrive(gf.getStudentCode(), bf1, AccessModification.ADD);
 		ArrivalStudent jh = studentService.getArrive(4l);
-		studentService.modifyStudentArrive(gf, jh, AccessModification.DELETE);
-		StudentLesson hgs = new StudentLesson();
-		hgs.setLesson("Java Learn");
-		hgs.setCodeLesson("J12");
-		hgs.setTypeLesson("Informatics");
-		studentService.modifyStudentLesson(gf, hgs, AccessModification.ADD);
+		studentService.modifyStudentArrive(gf.getStudentCode(), jh, AccessModification.DELETE);
 		Teacher f = new Teacher();
+		f.setCodeTeacher("NIS4672912");
 		f.setUsername("Arrijal");
 		f.setEmail("dfjhdsjkfn");
 		f.setGender(GenderType.MALE);
-		f.setCodeTeacher("NIS4672912");
-//		teacherService.save(f);
-//		studentService.modifyTeacher(gf, f, AccessModification.ADD);
+		teacherService.save(f);
+		studentService.modifyTeacher("NIS4672912", "L200190150", AccessModification.ADD);
+//		teacherService.delete(f.getCodeTeacher());
+		StudentLesson bhe = studentService.getLesson("J12");
+		studentService.modifyStudentLesson(gf.getStudentCode(), bhe, AccessModification.ADD);
+		studentService.modifyTeacher("NIS4672912", "L200190150", AccessModification.DELETE);
 	}
-
 }

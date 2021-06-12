@@ -14,6 +14,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -25,8 +27,8 @@ public class Teacher {
 	private String codeTeacher;
 	@NotBlank(message="username must be included")
 	private String username;
+	@NotNull(message="gender must be included")
 	@Enumerated
-	@NotBlank(message="gender must be included")
 	private GenderType gender;
 	@NotBlank(message="email must be included")
 //	@Email(message="Must be a valid email", regexp="${email}")
@@ -37,7 +39,7 @@ public class Teacher {
 	@OneToMany(mappedBy="teacherArrive", cascade= {CascadeType.MERGE, CascadeType.PERSIST})
 	private List<ArrivalTeacher> teacherArr;
 	@ManyToMany(mappedBy="teachers")
-	@JsonIgnore
+//	@JsonIgnore
 	private Set<Student> students;
 	public Teacher() {
 		super();
@@ -65,11 +67,6 @@ public class Teacher {
 //		if(this.students.contains(students)) {return ;}
 //		this.students.add(students);
 //		students.addTeacher(this);
-//	}
-//	public void removeStudents(Student students) {
-//		if(!this.students.contains(students)) {return ;}
-//		this.students.remove(students);
-//		students.removeTeacher(this);
 //	}
 	public GenderType getGender() {
 		return gender;

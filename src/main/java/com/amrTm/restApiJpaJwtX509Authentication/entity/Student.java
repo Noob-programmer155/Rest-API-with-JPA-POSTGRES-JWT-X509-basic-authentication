@@ -82,11 +82,10 @@ public class Student {
 //		this.teachers.add(teachers);
 //		teachers.addStudents(this);
 //	}
-//	public void removeTeacher(Teacher teachers) {
-//		if(!this.teachers.contains(teachers)) {return ;}
-//		this.teachers.remove(teachers);
-//		teachers.removeStudents(this);
-//	}
+	public void removeTeacher(Teacher teachers) {
+		this.teachers.remove(teachers);
+		teachers.getStudents().remove(this);
+	}
 	public String getEmail() {
 		return email;
 	}
