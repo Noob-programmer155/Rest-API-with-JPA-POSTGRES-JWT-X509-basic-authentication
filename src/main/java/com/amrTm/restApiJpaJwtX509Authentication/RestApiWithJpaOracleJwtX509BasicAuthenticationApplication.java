@@ -10,15 +10,21 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.amrTm.restApiJpaJwtX509Authentication.entity.Admin;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.ArrivalStudent;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.GenderType;
+import com.amrTm.restApiJpaJwtX509Authentication.entity.Role;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Student;
-import com.amrTm.restApiJpaJwtX509Authentication.entity.StudentLesson;
+import com.amrTm.restApiJpaJwtX509Authentication.entity.Lesson;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
+import com.amrTm.restApiJpaJwtX509Authentication.repo.AdminRepo;
+import com.amrTm.restApiJpaJwtX509Authentication.security.TokenProvider;
 import com.amrTm.restApiJpaJwtX509Authentication.services.TeacherService;
 import com.amrTm.restApiJpaJwtX509Authentication.services.AccessModification;
+import com.amrTm.restApiJpaJwtX509Authentication.services.AdminService;
 import com.amrTm.restApiJpaJwtX509Authentication.services.StudentService;
 
 @SpringBootApplication
@@ -30,6 +36,12 @@ public class RestApiWithJpaOracleJwtX509BasicAuthenticationApplication implement
 	private StudentService studentService;
 	@Autowired
 	private TeacherService teacherService; 
+	@Autowired
+	private AdminRepo adminRepo;
+	@Autowired
+	private TokenProvider tokenProvider;
+	@Autowired
+	private AdminService adminService; 
 	
 	public static void main(String[] args) {
 		SpringApplication.run(RestApiWithJpaOracleJwtX509BasicAuthenticationApplication.class, args);
@@ -59,11 +71,11 @@ public class RestApiWithJpaOracleJwtX509BasicAuthenticationApplication implement
 		d.add(a);d.add(b);d.add(c);
 		
 		studentService.saveAll(d);
-		StudentLesson hgs = new StudentLesson();
+		Lesson hgs = new Lesson();
 		hgs.setLesson("Java Learn");
 		hgs.setCodeLesson("J12");
 		hgs.setTypeLesson("Informatics");
-		studentService.saveLesson(hgs);
+		adminService.saveLesson(hgs);
 		Student e = new Student();
 		e.setFirst("Donni");
 		e.setLast("johnsen");
@@ -78,7 +90,7 @@ public class RestApiWithJpaOracleJwtX509BasicAuthenticationApplication implement
 		ArrivalStudent bf1 = new ArrivalStudent();
 		bf1.setArrive(LocalDateTime.now());
 		studentService.modifyStudentArrive(gf.getStudentCode(), bf1, AccessModification.ADD);
-		ArrivalStudent jh = studentService.getArrive(4l);
+		ArrivalStudent jh = studentService.getArrive(4l,true);
 		studentService.modifyStudentArrive(gf.getStudentCode(), jh, AccessModification.DELETE);
 		Teacher f = new Teacher();
 		f.setCodeTeacher("NIS4672912");
@@ -88,8 +100,24 @@ public class RestApiWithJpaOracleJwtX509BasicAuthenticationApplication implement
 		teacherService.save(f);
 		studentService.modifyTeacher("NIS4672912", "L200190150", AccessModification.ADD);
 //		teacherService.delete(f.getCodeTeacher());
-		StudentLesson bhe = studentService.getLesson("J12");
-		studentService.modifyStudentLesson(gf.getStudentCode(), bhe, AccessModification.ADD);
+		Lesson bhe = studentService.getLesson("J12");
+		studentService.modifyStudentLesson(gf.getStudentCode(), bhe.getCodeLesson(), AccessModification.ADD);
 		studentService.modifyTeacher("NIS4672912", "L200190150", AccessModification.DELETE);
+		teacherService.modifyTeacherLesson(f.getCodeTeacher(), bhe.getCodeLesson(), AccessModification.ADD);
+		studentService.modifyStudentLesson(gf.getStudentCode(), bhe.getCodeLesson(), AccessModification.DELETE);
+		bhe.setLesson("Learn With Java");
+		adminService.modifyLesson(bhe);
+		
+		Admin hg = new Admin();
+		hg.setUsername("Amar");
+		hg.setPassword(new BCryptPasswordEncoder().encode("Amar"));
+		hg.setEmail("rijalamar29@gmail.com");
+		List<Role> kj = new ArrayList<>();
+		kj.add(Role.ADMIN);
+		kj.add(Role.USER);
+		hg.setRole(kj);
+		hg.setValidation(true);
+		adminRepo.saveAndFlush(hg);
+		System.out.println(tokenProvider.setToken(hg.getUsername(), hg.getEmail(), hg.getRole()));
 	}
 }

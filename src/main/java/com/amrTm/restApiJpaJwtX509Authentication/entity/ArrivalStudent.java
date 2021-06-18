@@ -1,7 +1,7 @@
 package com.amrTm.restApiJpaJwtX509Authentication.entity;
 
 import java.time.LocalDateTime;
-import javax.persistence.CascadeType;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,15 +10,19 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @Entity
 @Table(name="ArrivalStudent")
+@JsonIdentityInfo(
+		generator = ObjectIdGenerators.PropertyGenerator.class,
+		property="idArrive")
 public class ArrivalStudent {
 	@Id
-	@NotNull
 	@GeneratedValue
-	private Long id;
+	private long idArrive;
 	@Column(columnDefinition="TIMESTAMP")
 	private LocalDateTime arrive;
 	@ManyToOne
@@ -27,11 +31,11 @@ public class ArrivalStudent {
 	public ArrivalStudent() {
 		super();
 	}
-	public Long getId() {
-		return id;
+	public Long getIdArrive() {
+		return idArrive;
 	}
-	public void setId(Long id) {
-		this.id = id;
+	public void setIdArrive(Long idArrive) {
+		this.idArrive = idArrive;
 	}
 	public LocalDateTime getArrive() {
 		return arrive;

@@ -1,7 +1,5 @@
 package com.amrTm.restApiJpaJwtX509Authentication.repo;
 
-import java.util.List;
-
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,13 +9,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Admin;
-import com.amrTm.restApiJpaJwtX509Authentication.entity.Role;
+import com.amrTm.restApiJpaJwtX509Authentication.entity.GenderType;
 
 @Repository
 public interface AdminRepo extends JpaRepository<Admin,Long>{
-	public Admin findByUsername(String username);
-	@Modifying
+	public boolean existsByUsername(String username);
+//	@Modifying
 	@Transactional
-	@Query("select a from Admin a join fetch a.role t where a.username = :username")
-	public List<Role> findAllRole(@Param("username") String username);
+	@Query("select a from Admin a join fetch a.roles t where a.username = :username")
+	public Admin findByUsername(@Param("username") String username);
 }

@@ -18,12 +18,17 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 @Entity
 @Table(name="Student")
+@JsonIdentityInfo(
+		generator = ObjectIdGenerators.PropertyGenerator.class,
+		property = "studentCode")
 public class Student {
 	@Id
-	@NotBlank(message="student code must be included")
-	@Column(unique=true)
+	@Column(name="STUDENT_CODE",unique=true,nullable=false)
 	private String studentCode;
 	@NotBlank(message="first name must be included")
 	private String first;
@@ -34,10 +39,11 @@ public class Student {
 	private GenderType gender;
 	@NotBlank(message="email must be included")
 //	@Email(message="Must be a valid email", regexp="${email}")
-	@Column(unique=true)
+	@Column(name="EMAIL",unique=true)
 	private String email;
-	@OneToMany(mappedBy="studentLesson", cascade= {CascadeType.MERGE,CascadeType.PERSIST})
-	private List<StudentLesson> studentLes;
+	@ManyToMany(cascade= {CascadeType.MERGE})
+	@JoinTable(name="Lesson_Student", joinColumns= {@JoinColumn(name="Student_Id")}, inverseJoinColumns = {@JoinColumn(name="Lesson_Id")})
+	private Set<Lesson> studentLes;
 	@OneToMany(mappedBy="studentArrive", cascade= {CascadeType.MERGE,CascadeType.PERSIST})
 	private List<ArrivalStudent> studentArr;
 	@ManyToMany(cascade= {CascadeType.MERGE})
@@ -45,7 +51,7 @@ public class Student {
 	private Set<Teacher> teachers;
 	public Student() {
 		super();
-		this.studentLes = new LinkedList<>();
+		this.studentLes = new HashSet<>();
 		this.studentArr = new LinkedList<>();
 		this.teachers = new HashSet<>();
 		// TODO Auto-generated constructor stub
@@ -77,14 +83,15 @@ public class Student {
 	public Set<Teacher> getTeachers() {
 		return teachers;
 	}
-//	public void addTeacher(Teacher teachers) {
-//		if(this.teachers.contains(teachers)) {return ;}
-//		this.teachers.add(teachers);
-//		teachers.addStudents(this);
-//	}
+	public void addTeacher(Teacher teachers) {
+		if(this.teachers.contains(teachers)) {return ;}
+		this.teachers.add(teachers);
+		teachers.addStudents(this);
+	}
 	public void removeTeacher(Teacher teachers) {
+		if(!this.teachers.contains(teachers)) {return ;}
 		this.teachers.remove(teachers);
-		teachers.getStudents().remove(this);
+		teachers.removeStudents(this);
 	}
 	public String getEmail() {
 		return email;
@@ -92,19 +99,19 @@ public class Student {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	public List<StudentLesson> getStudentsLesson() {
+	public Set<Lesson> getLesson() {
 		return studentLes;
 	}
-//	public void addLesson(Lesson lesson) {
-//		if(this.studentsLesson.contains(lesson)) {return ;}
-//		this.studentsLesson.add(lesson);
-//		lesson.addLesson(this);
-//	}
-//	public void removeLesson(Lesson lesson) {
-//		if(!this.studentsLesson.contains(lesson)) {return ;}
-//		this.studentsLesson.remove(lesson);
-//		lesson.removeLesson(this);
-//	}
+	public void addLesson(Lesson lesson) {
+		if(this.studentLes.contains(lesson)) {return ;}
+		this.studentLes.add(lesson);
+		lesson.addLesson(this);
+	}
+	public void removeLesson(Lesson lesson) {
+		if(!this.studentLes.contains(lesson)) {return ;}
+		this.studentLes.remove(lesson);
+		lesson.removeLesson(this);
+	}
 	public List<ArrivalStudent> getStudentsArrive() {
 		return studentArr;
 	}
@@ -118,7 +125,7 @@ public class Student {
 //		this.studentArr.remove(arrive);
 //		arrive.removeArrive(this);
 //	}
-	public void setStudentsLesson(List<StudentLesson> studentsLesson) {
+	public void setLesson(Set<Lesson> studentsLesson) {
 		this.studentLes = studentsLesson;
 	}
 	public void setStudentsArrive(List<ArrivalStudent> studentsArrive) {

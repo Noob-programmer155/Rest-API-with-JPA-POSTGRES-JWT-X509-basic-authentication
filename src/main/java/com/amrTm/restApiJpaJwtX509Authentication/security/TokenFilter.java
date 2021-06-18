@@ -29,10 +29,11 @@ public class TokenFilter extends OncePerRequestFilter{
 			if (token != null && provider.validateToken(token)) {
 				Authentication auth = provider.getAuth(token);
 				SecurityContextHolder.getContext().setAuthentication(auth);
-			}}
+			}
+			}
 		catch(IllegalArgumentException e) {
 			SecurityContextHolder.clearContext();
-			throw new IllegalArgumentException(e.getMessage());
+			throw new IllegalArgumentException();
 		}
 		catch(JwtException e) {
 			SecurityContextHolder.clearContext();

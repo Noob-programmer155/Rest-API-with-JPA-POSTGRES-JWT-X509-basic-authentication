@@ -15,7 +15,7 @@ public class MailService {
 		this.javaMailSender = javaMailSender;
 	}
 	
-	public void sendMessage(String to, String from, String subject, String text) throws MessagingException {
+	public String sendMessage(String to, String from, String subject, String text) throws MessagingException {
 		MimeMessage msg = javaMailSender.createMimeMessage();
 		MimeMessageHelper hg = new MimeMessageHelper(msg);
 		hg.setTo(to);
@@ -23,6 +23,7 @@ public class MailService {
 		hg.setSubject(subject);
 		hg.setText(text, false);
 		javaMailSender.send(msg);
+		return "Message was success to send";
 	}
 	
 	public String sendValidationMessage(String to, String name, String token) throws MessagingException {
@@ -32,8 +33,8 @@ public class MailService {
 		msg.setSubject("Email Validation");
 		msg.setText("<h4>Hello <strong>"+name+"</strong>,</h4><br/><hr/>"
 				+ "<h6>Please confirm your email with this link:</h6><br/>"
-				+ "<a href='javascript:' onclick=\"location.href='http://localhost:6753/signup/confirm?sa="+token+"'\" type='button'>click me</a>", true);
+				+ "<a href='https://localhost:6753/firns/signup/confirm?sa="+token+"&nm="+name+"' type='button'>click me</a>", true);
 		javaMailSender.send(mime);
-		return "Message success to send";
+		return "Message was success to send";
 	}
 }

@@ -5,7 +5,9 @@ import java.util.Date;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.WebUtils;
 
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Role;
 
@@ -37,7 +40,7 @@ public class TokenProvider {
 		secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
 	}
 	
-	public String createToken(String username, String email, List<Role> roles) {
+	public String setToken(String username, String email, List<Role> roles) {
 		Claims claim = Jwts.claims().setSubject(username);
 		claim.put("email", email);
 		claim.put("Auth", roles);
@@ -47,25 +50,61 @@ public class TokenProvider {
 				.setClaims(claim)
 				.setIssuedAt(now)
 				.setExpiration(expired)
-				.signWith(SignatureAlgorithm.RS512, secretKey)
+				.signWith(SignatureAlgorithm.HS512, secretKey)
 				.compact();
+	}
+	
+	public boolean createToken(String username, String email, List<Role> roles, HttpServletResponse res, HttpServletRequest req) {
+		Cookie kie = WebUtils.getCookie(req, "JWT_BEARER");
+		if(kie==null) {
+			String token = setToken(username, email, roles);
+			Cookie kei = new Cookie("JWT_BEARER", token);
+			kei.setHttpOnly(true);
+			kei.setPath("/");
+			kei.setSecure(true);
+			res.addCookie(kei);
+			return true;
+		}
+		else {
+			kie.setMaxAge(0);
+			res.addCookie(kie);
+			String token = setToken(username, email, roles);
+			Cookie kei = new Cookie("JWT_BEARER", token);
+			kei.setHttpOnly(true);
+			kei.setPath("/");
+			kei.setSecure(true);
+			res.addCookie(kei);
+			return true;
+		}
 	}
 	
 	public Authentication getAuth(String token) {
 		String name = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
 		UserDetails detail = user.loadUserByUsername(name);
-		return new UsernamePasswordAuthenticationToken(detail,"",detail.getAuthorities());
+		return new UsernamePasswordAuthenticationToken(detail.getUsername(),detail.getPassword(),detail.getAuthorities());
 	}
 	
 	public String resolveToken(HttpServletRequest req) {
-		String auth = req.getHeader("Authorization");
-		if(auth != null && auth.startsWith("Bearer "))
-			return auth.substring(7);
+//		if using header for authentication
+		
+//		String auth = req.getHeader("Authorization");
+//		if(auth != null && auth.startsWith("Bearer "))
+//			return auth.substring(7);
+//		return null;
+		
+		Cookie kie = WebUtils.getCookie(req, "JWT_BEARER");
+		if(kie != null) {
+			return kie.getValue();
+		}
 		return null;
 	}
 	
-	public boolean validateToken(String token) throws JwtException, IllegalArgumentException{
-		Jwts.parser().setSigningKey(secretKey).parseClaimsJwt(token);
-		return true;
+	public boolean validateToken(String token) {
+		try {
+		Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+		return true;}
+		catch(JwtException | IllegalArgumentException e) {
+			return false;
+		}
 	}
 }

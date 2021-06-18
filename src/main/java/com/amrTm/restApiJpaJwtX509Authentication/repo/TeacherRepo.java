@@ -24,8 +24,4 @@ public interface TeacherRepo extends JpaRepository<Teacher,String>, TeacherRepoE
 						@Param("gender") GenderType gender,
 						@Param("email") String email,
 						@Param("code") String kode);
-	@Modifying
-	@Transactional
-	@Query("select a from Teacher a join fetch a.teacherLes t where a.codeTeacher = :id")
-	public Teacher findAllLessonOnTeacherId(@Param("id") String id);
 }

@@ -25,8 +25,4 @@ public interface StudentRepo extends JpaRepository<Student,String> {
 						@Param("gender") GenderType gender,
 						@Param("email") String email,
 						@Param("code") String kode);
-	@Modifying
-	@Transactional
-	@Query("select a from Student a join fetch a.studentLes t where a.studentCode = :id")
-	public Student findAllLessonOnStudentId(@Param("id") String id);
 }

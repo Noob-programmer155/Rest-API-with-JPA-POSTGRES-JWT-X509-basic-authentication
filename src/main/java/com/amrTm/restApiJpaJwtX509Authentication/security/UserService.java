@@ -25,7 +25,7 @@ public class UserService implements UserDetailsService{
 	public UserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException {
 		Admin admin = adminRepo.findByUsername(username);
-		if(!admin.isValidate()) {
+		if(!admin.isValidation()) {
 			return User.withUsername(admin.getUsername())
 					.password(admin.getPassword())
 					.authorities(admin.getRole())

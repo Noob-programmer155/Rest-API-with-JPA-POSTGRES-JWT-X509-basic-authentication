@@ -15,7 +15,6 @@ import com.amrTm.restApiJpaJwtX509Authentication.entity.ArrivalTeacher;
 
 @Repository
 public interface ArriveTeacherRepo extends JpaRepository<ArrivalTeacher, Long>{
-	@Modifying
 	@Transactional
 	@Query("select u from ArrivalTeacher u where u.arrive between :start and :end")
 	public List<ArrivalTeacher> findArriveBeetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
