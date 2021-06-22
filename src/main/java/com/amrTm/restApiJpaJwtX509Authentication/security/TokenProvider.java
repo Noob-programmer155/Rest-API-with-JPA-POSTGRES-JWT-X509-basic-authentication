@@ -18,8 +18,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.WebUtils;
 
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Role;
+import com.amrTm.restApiJpaJwtX509Authentication.repo.AdminRepo;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -34,6 +36,9 @@ public class TokenProvider {
 	
 	@Autowired
 	private UserService user;
+	
+	@Autowired
+	private AdminRepo adminRepo;
 	
 	@PostConstruct
 	protected void init() {
@@ -101,10 +106,22 @@ public class TokenProvider {
 	
 	public boolean validateToken(String token) {
 		try {
-		Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
-		return true;}
+		Jws<Claims> hg = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+		if(adminRepo.existsByUsernameAndEmail(hg.getBody().getSubject(),(String)hg.getBody().get("email")))
+			return true;
+		return false;
+		}
 		catch(JwtException | IllegalArgumentException e) {
-			return false;
+			throw new JwtException("expired or invalid JWT token");
+		}
+	}
+	
+	public boolean validateToken(HttpServletRequest req) {
+		try {
+		Cookie e = WebUtils.getCookie(req, "JWT_BEARER");
+		return validateToken(e.getValue());}
+		catch(NullPointerException e) {
+			throw new JwtException("expired or invalid JWT token");
 		}
 	}
 }

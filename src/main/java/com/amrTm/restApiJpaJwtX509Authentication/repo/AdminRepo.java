@@ -13,7 +13,7 @@ import com.amrTm.restApiJpaJwtX509Authentication.entity.GenderType;
 
 @Repository
 public interface AdminRepo extends JpaRepository<Admin,Long>{
-	public boolean existsByUsername(String username);
+	public boolean existsByUsernameAndEmail(String username, String email);
 //	@Modifying
 	@Transactional
 	@Query("select a from Admin a join fetch a.roles t where a.username = :username")

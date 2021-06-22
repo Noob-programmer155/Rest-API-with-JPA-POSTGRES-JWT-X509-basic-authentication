@@ -11,13 +11,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,16 +24,22 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.amrTm.restApiJpaJwtX509Authentication.DTO.AdminDTO;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Admin;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Lesson;
-import com.amrTm.restApiJpaJwtX509Authentication.entity.Student;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.AttributeNotFoundException;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.SaveAttributeException;
 import com.amrTm.restApiJpaJwtX509Authentication.mailConfig.MessageObject;
-import com.amrTm.restApiJpaJwtX509Authentication.services.AccessModification;
 import com.amrTm.restApiJpaJwtX509Authentication.services.AdminService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
 
 @RestController
 @RequestMapping("/firns")
+@Api(tags="Admin")
 public class RestAdmin {
 	
 	@Autowired
@@ -46,72 +49,148 @@ public class RestAdmin {
 	private ModelMapper modelMapper; 
 	
 	@GetMapping("/info-admin")
-	@PreAuthorize("hasAuthority('ADMIN')")
-	public String getAuthAdmin() {
-		return (String) adminService.getAdminActive().getPrincipal();
+	@ApiOperation(value="${Rest.Admin.getadmin.value}", notes="${Rest.Admin.getadmin.note}", response=String.class
+			, authorizations= {@Authorization(value="apiKey")})
+	@ApiResponses({
+		@ApiResponse(code = 401, message = "authority not allowed or not found"),
+		@ApiResponse(code = 403, message = "expired or invalid JWT token")
+	})
+	public String getAuthAdmin(HttpServletRequest req) {
+		return (String) adminService.getAdminActive(req).getPrincipal();
 	}
 	
 	@PostMapping("/signin")
-	public String signin(@RequestParam String username, @RequestParam String password, HttpServletResponse res, HttpServletRequest req){
+	@ApiOperation(value="${Rest.Admin.signin.value}", notes="${Rest.Admin.signin.note}", response=String.class)
+	@ApiResponses({
+		@ApiResponse(code = 401, message = "authority not allowed or not found")
+	})
+	public String signin(@ApiParam("username") @RequestParam String username, 
+						 @ApiParam("password") @RequestParam String password, HttpServletResponse res, HttpServletRequest req){
 		return adminService.signInAdmin(username, password, res, req);
 	}
 	
 	@PostMapping("/signup")
-	public String signup(@RequestBody AdminDTO admin) throws MessagingException{
+	@ApiOperation(value="${Rest.Admin.signup.value}", notes="${Rest.Admin.signup.note}", response=String.class)
+	@ApiResponses({
+		@ApiResponse(code = 500, message = "message can`t send"),
+		@ApiResponse(code = 304, message = "cannot save, maybe username or email already exist, please use other username or email")
+	})
+	public String signup(@ApiParam("admin model") @RequestBody AdminDTO admin) throws MessagingException, SaveAttributeException{
 		return adminService.signUpAdmin(modelMapper.map(admin, Admin.class));
 	}
 	
 	@GetMapping("/signup/confirm")
-	public String validation(@RequestParam String sa,@RequestParam String nm , HttpServletResponse res, HttpServletRequest req) {
-		if(adminService.validateLink(sa, nm, res, req))
-			return "Success to validating";
-		return "Validating failed";
+	@ApiOperation(value="${Rest.Admin.signupresponse.value}", notes="${Rest.Admin.signupresponse.note}", response=String.class)
+	@ApiResponses({
+		@ApiResponse(code = 500, message = "message can`t send")
+	})
+	public String validation(@ApiParam("") @RequestParam String sa,
+							@ApiParam("") @RequestParam String nm , HttpServletResponse res, HttpServletRequest req) throws MessagingException {
+		return adminService.validateLink(sa, nm, res, req);
 	}
 	
-	@GetMapping("/refresh")
-	@PreAuthorize("hasAuthority('ADMIN')")
+	@PostMapping("/refresh")
+	@ApiOperation(value="${Rest.Admin.refresh.value}", notes="${Rest.Admin.refresh.note}", response=ResponseEntity.class
+			, authorizations= {@Authorization(value="apiKey")})
+	@ApiResponses({
+		@ApiResponse(code = 401, message = "authority not allowed or not found")
+	})
 	public ResponseEntity<User> refresh(HttpServletResponse res, HttpServletRequest req) {
-		String oi = (String) adminService.getAdminActive().getPrincipal();
-		adminService.refresh(oi, res, req);
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().buildAndExpand(oi).toUri();
+		adminService.refresh(req.getRemoteUser(), res, req);
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().buildAndExpand(req.getRemoteUser()).toUri();
 		return ResponseEntity.created(uri).build();
 	}
 	
 	@PostMapping("/send-message")
-	public String send(@RequestBody MessageObject msg) throws MessagingException {
-		return adminService.sendMessage(msg.getTo(), msg.getFrom(), msg.getSubject(), msg.getText());
+	@ApiOperation(value="${Rest.Admin.send.value}", notes="${Rest.Admin.send.note}", response=String.class
+			, authorizations= {@Authorization(value="apiKey")})
+	@ApiResponses({
+		@ApiResponse(code = 401, message = "authority not allowed or not found"),
+		@ApiResponse(code = 403, message = "expired or invalid JWT token"),
+		@ApiResponse(code = 500, message = "message can`t send")
+	})
+	public String send(@ApiParam("message") @RequestBody MessageObject msg, HttpServletRequest req) throws MessagingException {
+		return adminService.sendMessage(msg.getTo(), msg.getFrom(), msg.getSubject(), msg.getText(), req);
 	}
 	
 	@PostMapping("/save/lesson")
-	public ResponseEntity<Lesson> saveLesson(@RequestBody Lesson lesson) throws SaveAttributeException{
+	@ApiOperation(value="${Rest.Admin.savelesson.value}", notes="${Rest.Admin.savelesson.note}", response=ResponseEntity.class
+			, authorizations= {@Authorization(value="apiKey")})
+	@ApiResponses({
+		@ApiResponse(code = 401, message = "authority not allowed or not found"),
+		@ApiResponse(code = 403, message = "expired or invalid JWT token"),
+		@ApiResponse(code = 304, message = "Cannot saving this study, maybe study with the same code and name has been saved")
+	})
+	public ResponseEntity<Lesson> saveLesson(@ApiParam("lesson study") @RequestBody Lesson lesson, HttpServletRequest req) throws SaveAttributeException{
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(lesson.getCodeLesson()).toUri();
-		adminService.saveLesson(lesson);
+		adminService.saveLesson(lesson, req);
 		return ResponseEntity.created(uri).build();
 	}
 	
 	@PostMapping("/modify/lesson")
-	public ResponseEntity<Lesson> modifyLesson(@RequestParam String codeStudent, @RequestParam Lesson lesson,
-			@PathVariable AccessModification access) throws SaveAttributeException, AttributeNotFoundException{
-		Lesson jh = adminService.modifyLesson(lesson);
-		return ResponseEntity.ok(jh);
-	}
-	
-	@PostMapping("/save/all/lesson")
-	public ResponseEntity<Lesson> saveAllLesson(@RequestBody List<Lesson> lesson) throws SaveAttributeException{
-		adminService.saveAllLesson(lesson);
-		return ResponseEntity.ok(null);
-	}
-	
-	@PutMapping("/modify")
-	public ResponseEntity<Teacher> modifyAdmin(@RequestBody Admin admin) throws SaveAttributeException{
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(admin.getId()).toUri();
-		adminService.modify(admin);
+	@ApiOperation(value="${Rest.Admin.savelesson.value}", notes="${Rest.Admin.savelesson.note}", response=ResponseEntity.class
+			, authorizations= {@Authorization(value="apiKey")})
+	@ApiResponses({
+		@ApiResponse(code = 401, message = "authority not allowed or not found"),
+		@ApiResponse(code = 403, message = "expired or invalid JWT token"),
+		@ApiResponse(code = 304, message = "Cannot saving this study, maybe study with the same code and name has been saved")
+	})
+	public ResponseEntity<Lesson> modifyLesson(@ApiParam("modified lesson") @RequestBody Lesson lesson, HttpServletRequest req) throws SaveAttributeException {
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(lesson.getCodeLesson()).toUri();
+		adminService.modifyLesson(lesson, req);
 		return ResponseEntity.created(uri).build();
 	}
 	
-	@DeleteMapping("/deleteLesson")
-	public boolean delete(String codeLesson) throws AttributeNotFoundException {
-		adminService.delete(codeLesson);
+	@PostMapping("/save/all/lesson")
+	@ApiOperation(value="${Rest.Admin.savealllesson.value}", notes="${Rest.Admin.savealllesson.note}", response=ResponseEntity.class
+			, authorizations= {@Authorization(value="apiKey")})
+	@ApiResponses({
+		@ApiResponse(code = 401, message = "authority not allowed or not found"),
+		@ApiResponse(code = 403, message = "expired or invalid JWT token"),
+		@ApiResponse(code = 304, message = "Cannot saving this study, maybe study with the same code and name has been saved")
+	})
+	public ResponseEntity<Lesson> saveAllLesson(@ApiParam("lesson studies") @RequestBody List<Lesson> lesson, HttpServletRequest req) throws SaveAttributeException{
+		adminService.saveAllLesson(lesson, req);
+		return ResponseEntity.ok(null);
+	}
+	
+	@DeleteMapping("/delete/Lesson")
+	@ApiOperation(value="${Rest.Admin.deletelesson.value}", notes="${Rest.Admin.deletelesson.note}", response=Boolean.class
+			, authorizations= {@Authorization(value="apiKey")})
+	@ApiResponses({
+		@ApiResponse(code = 401, message = "authority not allowed or not found"),
+		@ApiResponse(code = 403, message = "expired or invalid JWT token"),
+		@ApiResponse(code = 404, message = "Lesson not found !")
+	})
+	public boolean delete(@ApiParam("lesson code") @RequestParam String codeLesson, HttpServletRequest req) throws AttributeNotFoundException {
+		adminService.delete(codeLesson, req);
+		return true;
+	}
+	
+	@PostMapping("/modify")
+	@ApiOperation(value="${Rest.Admin.modifylesson.value}", notes="${Rest.Admin.modifylesson.note}", response=ResponseEntity.class
+			, authorizations= {@Authorization(value="apiKey")})
+	@ApiResponses({
+		@ApiResponse(code = 401, message = "authority not allowed or not found"),
+		@ApiResponse(code = 403, message = "expired or invalid JWT token"),
+		@ApiResponse(code = 304, message = "cannot modify, maybe username or email already exist, please use other username or email")
+	})
+	public ResponseEntity<Teacher> modifyAdmin(@ApiParam("admin") @RequestBody Admin admin, HttpServletRequest req) throws SaveAttributeException{
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(admin.getId()).toUri();
+		adminService.modify(admin, req);
+		return ResponseEntity.created(uri).build();
+	}
+	
+	@DeleteMapping("/delete")
+	@ApiOperation(value="${Rest.Admin.deleteadmin.value}", notes="${Rest.Admin.deleteadmin.note}", response=Boolean.class
+			, authorizations= {@Authorization(value="apiKey")})
+	@ApiResponses({
+		@ApiResponse(code = 401, message = "authority not allowed or not found"),
+		@ApiResponse(code = 403, message = "expired or invalid JWT token"),
+		@ApiResponse(code = 404, message = "admin not found !")
+	})
+	public boolean delete(@ApiParam("admin") @RequestBody Admin admin, HttpServletRequest req) throws AttributeNotFoundException {
+		adminService.deletes(admin, req);
 		return true;
 	}
 	

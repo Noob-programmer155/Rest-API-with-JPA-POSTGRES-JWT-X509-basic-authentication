@@ -18,7 +18,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Admin;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Lesson;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Role;
@@ -52,7 +51,9 @@ public class AdminService implements LessonEntity{
 		this.mailService = mailService;
 	}
 	
-	public Authentication getAdminActive() {
+	@PreAuthorize("hasAuthority('ADMIN')")
+	public Authentication getAdminActive(HttpServletRequest req) {
+		tokenProvider.validateToken(req);
 		Authentication details = SecurityContextHolder.getContext().getAuthentication();
 		return details;
 	}
@@ -63,8 +64,8 @@ public class AdminService implements LessonEntity{
 		return "Signin Success";
 	}
 	
-	public String signUpAdmin(Admin admin) throws MessagingException {
-		if(!adminRepo.existsByUsername(admin.getUsername())) {
+	public String signUpAdmin(Admin admin) throws MessagingException, SaveAttributeException {
+		if(!adminRepo.existsByUsernameAndEmail(admin.getUsername(),admin.getEmail())) {
 			List<Role> jh = new ArrayList<>();
 			jh.add(Role.ADMIN);
 			jh.add(Role.USER);
@@ -76,39 +77,51 @@ public class AdminService implements LessonEntity{
 			String s = mailService.sendValidationMessage(admin.getEmail(), admin.getUsername(), token);
 			return s;
 		}
-		return null;
+		throw new SaveAttributeException("cannot save, maybe username or email already exist, please use other username or email");
 	}
 	
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public boolean refresh(String username,HttpServletResponse res, HttpServletRequest req) {
 		return tokenProvider.createToken(username, adminRepo.findByUsername(username).getEmail(), adminRepo.findByUsername(username).getRole(),res,req);
 	}
 	
-	public boolean validateLink(String token, String name, HttpServletResponse res, HttpServletRequest req) {
+	public String validateLink(String token, String name, HttpServletResponse res, HttpServletRequest req) throws MessagingException {
 		if(tokenProvider.validateToken(token)) {
 			Admin admin = adminRepo.findByUsername(tokenProvider.getAuth(token).getName());
 			admin.setValidation(true);
 			adminRepo.save(admin);
 			tokenProvider.createToken(admin.getUsername(), admin.getEmail(), admin.getRole(), res, req);
-			return true;
+			return "validating success";
 		}
 		else {
 			Admin admin = adminRepo.findByUsername(name);
-			admin.setValidation(true);
-			adminRepo.save(admin);
-			tokenProvider.createToken(admin.getUsername(), admin.getEmail(), admin.getRole(), res, req);
-			return true;
+			String t = tokenProvider.setToken(admin.getUsername(), admin.getEmail(), admin.getRole());
+			mailService.sendValidationMessage(admin.getEmail(), admin.getUsername(), t);
+			return "validating failed, we got a new ones for you, check your email";
 		}
 	}
 	
-	public String sendMessage(String to, String from, String subject, String text) throws MessagingException {
+	@PreAuthorize("hasAuthority('ADMIN')")
+	public String sendMessage(String to, String from, String subject, String text, HttpServletRequest req) throws MessagingException {
+		tokenProvider.validateToken(req);
 		return mailService.sendMessage(to, from, subject, text);
 	}
 	
-	public Lesson modifyLesson(Lesson lesson) {
-		return lessonRepo.saveAndFlush(lesson);
+	@PreAuthorize("hasAuthority('ADMIN')")
+	public boolean modifyLesson(Lesson lesson, HttpServletRequest req) throws SaveAttributeException {
+		tokenProvider.validateToken(req);
+		try {
+			lessonRepo.saveAndFlush(lesson);
+			return true;
+		}
+		catch(Exception e) {
+			throw new SaveAttributeException("Cannot saving this study, maybe study with the same code and name has been saved");
+		}
 	}
 	
-	public void saveLesson(Lesson lesson) throws SaveAttributeException {
+	@PreAuthorize("hasAuthority('ADMIN')")
+	public void saveLesson(Lesson lesson, HttpServletRequest req) throws SaveAttributeException {
+		tokenProvider.validateToken(req);
 		try {
 			lessonRepo.saveAndFlush(lesson);
 		}
@@ -117,27 +130,31 @@ public class AdminService implements LessonEntity{
 		}
 	}
 	
-	public void saveAllLesson(List<Lesson> lessons) throws SaveAttributeException {
+	@PreAuthorize("hasAuthority('ADMIN')")
+	public void saveAllLesson(List<Lesson> lessons, HttpServletRequest req) throws SaveAttributeException {
+		tokenProvider.validateToken(req);
 		try {
 			lessonRepo.saveAllAndFlush(lessons);
 		}
 		catch(Exception e) {throw new SaveAttributeException("Cannot saving this studies, maybe study with the same code and name has been saved");}
 	}
 	
-	@PreAuthorize("hasAuthority('ADMIN')")
-	public boolean modify(Admin admin) throws SaveAttributeException{
+	@PreAuthorize("hasAuthority('MANAGER')")
+	public boolean modify(Admin admin, HttpServletRequest req) throws SaveAttributeException{
+		tokenProvider.validateToken(req);
 		try {
 			adminRepo.saveAndFlush(admin);
 			return true;
 		}
 		catch(Exception e) {
-			throw new SaveAttributeException("Cannot modify this student, please check your input /or maybe email has been same with the other student");
+			throw new SaveAttributeException("cannot modify, maybe username or email already exist, please use other username or email");
 		}
 	}
 	
 	@Transactional
 	@PreAuthorize("hasAuthority('ADMIN')")
-	public void delete(String codeLesson) throws AttributeNotFoundException {
+	public void delete(String codeLesson, HttpServletRequest req) throws AttributeNotFoundException {
+		tokenProvider.validateToken(req);
 		try {
 			Lesson lesson = entityManager.find(Lesson.class, codeLesson);
 			for(Student s  : lesson.getStudentLesson()) {
@@ -151,5 +168,11 @@ public class AdminService implements LessonEntity{
 		catch(Exception e) {
 			throw new AttributeNotFoundException("Lesson not found !");
 		}
+	}
+
+	@PreAuthorize("hasAuthority('MANAGER')")
+	public void deletes(Admin admin, HttpServletRequest req) throws IllegalArgumentException{
+		tokenProvider.validateToken(req);
+		adminRepo.delete(admin);
 	}
 }

@@ -2,8 +2,10 @@ package com.amrTm.restApiJpaJwtX509Authentication.services;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
 import org.springframework.data.domain.Sort;
@@ -21,6 +23,7 @@ import com.amrTm.restApiJpaJwtX509Authentication.repo.ArriveStudentRepo;
 import com.amrTm.restApiJpaJwtX509Authentication.repo.LessonRepo;
 import com.amrTm.restApiJpaJwtX509Authentication.repo.StudentRepo;
 import com.amrTm.restApiJpaJwtX509Authentication.repo.TeacherRepo;
+import com.amrTm.restApiJpaJwtX509Authentication.security.TokenProvider;
 
 @Service
 public class StudentService {
@@ -29,45 +32,63 @@ public class StudentService {
 	private TeacherRepo teacherRepo; 
 	private ArriveStudentRepo arriveStudentRepo;
 	private LessonRepo lessonRepo; 
+	private TokenProvider tokenProvider;
 	
 	public StudentService(StudentRepo studentRepo, ArriveStudentRepo arriveStudentRepo,
-			LessonRepo lessonRepo, TeacherRepo teacherRepo) {
+			LessonRepo lessonRepo, TeacherRepo teacherRepo, TokenProvider tokenProvider) {
 		super();
 		this.studentRepo = studentRepo;
 		this.arriveStudentRepo = arriveStudentRepo;
 		this.lessonRepo = lessonRepo;
 		this.teacherRepo = teacherRepo;
+		this.tokenProvider = tokenProvider;
 	}
-
-	public List<Student> getAll() {
+	
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+	public List<Student> getAll(HttpServletRequest req) {
+		tokenProvider.validateToken(req);
 		return studentRepo.findAll(Sort.by(Order.asc("first")));
 	}
 	
-	public List<Student> getAll(List<String> studentCode){
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+	public List<Student> getAll(List<String> studentCode, HttpServletRequest req){
+		tokenProvider.validateToken(req);
 		return studentRepo.findAllById(studentCode);
 	}
 
-	public Student get(String code) throws AttributeNotFoundException{
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+	public Student get(String code, HttpServletRequest req) throws AttributeNotFoundException{
+		tokenProvider.validateToken(req);
 		return studentRepo.findById(code).orElseThrow(()->new AttributeNotFoundException("Student cannot found !"));
 	}
 	
-	public Lesson getLesson(String codeLesson) throws AttributeNotFoundException{
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+	public Lesson getLesson(String codeLesson, HttpServletRequest req) throws AttributeNotFoundException{
+		tokenProvider.validateToken(req);
 		return lessonRepo.findById(codeLesson).orElseThrow(()->new AttributeNotFoundException("Lesson cannot found !"));
 	}
 	
-	public List<Lesson> getLessonByType(String typeLesson){
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+	public List<Lesson> getLessonByType(String typeLesson, HttpServletRequest req){
+		tokenProvider.validateToken(req);
 		return lessonRepo.findAllByTypeLesson(typeLesson);
 	}
 	
-	public List<Lesson> getAllLesson(){
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+	public List<Lesson> getAllLesson(HttpServletRequest req){
+		tokenProvider.validateToken(req);
 		return lessonRepo.findAll(Sort.by(Order.asc("typeLesson"),Order.asc("lesson")));
 	}
 
-	public List<ArrivalStudent> getArrive(LocalDateTime start, LocalDateTime end){
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+	public List<ArrivalStudent> getArrive(LocalDateTime start, LocalDateTime end, HttpServletRequest req){
+		tokenProvider.validateToken(req);
 		return arriveStudentRepo.findArriveBeetween(start, end);
 	}
 	
-	public ArrivalStudent getArrive(Long id, boolean jpa) throws EntityNotFoundException{
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+	public ArrivalStudent getArrive(Long id, boolean jpa, HttpServletRequest req) throws EntityNotFoundException, NoSuchElementException{
+		tokenProvider.validateToken(req);
 		if (jpa)
 			return arriveStudentRepo.getById(id);
 		else
@@ -76,14 +97,18 @@ public class StudentService {
 	
 //	========================================================================================
 	
-	public void save(Student student) throws SaveAttributeException{
+	@PreAuthorize("hasAuthority('ADMIN')")
+	public void save(Student student, HttpServletRequest req) throws SaveAttributeException{
+		tokenProvider.validateToken(req);
 		try {
 			studentRepo.saveAndFlush(student);
 		}
 		catch(Exception w) {throw new SaveAttributeException("Cannot saving this student, please check your input /or maybe this student has been saved");}
 	}
 	
-	public void saveAll(List<Student> students) throws SaveAttributeException {
+	@PreAuthorize("hasAuthority('ADMIN')")
+	public void saveAll(List<Student> students, HttpServletRequest req) throws SaveAttributeException {
+		tokenProvider.validateToken(req);
 		try {
 			studentRepo.saveAllAndFlush(students);}
 		catch(Exception e) {
@@ -112,7 +137,9 @@ public class StudentService {
 //		}
 //	}
 	
-	public Student modify(Student student, String code) throws SaveAttributeException{
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+	public Student modify(Student student, String code, HttpServletRequest req) throws SaveAttributeException{
+		tokenProvider.validateToken(req);
 		try {
 			studentRepo.update(student.getFirst(), student.getLast(), student.getGender(), student.getEmail(), code);
 			return studentRepo.findById(code).get();
@@ -122,7 +149,9 @@ public class StudentService {
 		}
 	}
 	
-	public void modifyAll(Iterable<Student> student) throws SaveAttributeException{
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+	public void modifyAll(Iterable<Student> student, HttpServletRequest req) throws SaveAttributeException{
+		tokenProvider.validateToken(req);
 		try {
 			for (Student g : student) {
 				studentRepo.update(g.getFirst(), g.getLast(), g.getGender(), g.getEmail(), g.getStudentCode());
@@ -134,9 +163,11 @@ public class StudentService {
 	}
 	
 	@Transactional
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
 	public boolean modifyTeacher(String codeteacher, String codeStudent,
-			AccessModification access)/* throws SaveAttributeException */ {	
-//		try {
+			AccessModification access, HttpServletRequest req) throws AttributeNotFoundException {	
+		tokenProvider.validateToken(req);
+		try {
 			if(access.equals(AccessModification.ADD)) {
 				Teacher teacher = teacherRepo.getById(codeteacher);
 				Student hg = studentRepo.getById(codeStudent);
@@ -155,14 +186,16 @@ public class StudentService {
 				teacherRepo.saveAndFlush(teacher);
 				return true;
 			}
-//		}catch(Exception e) {
-//			throw new SaveAttributeException("Cannot modify this teacher, maybe student /or teacher is not found");
-//		}
+		}catch(Exception e) {
+			throw new AttributeNotFoundException("Cannot modify this teacher, maybe student /or teacher is not found");
+		}
 	}
 	
 	@Transactional
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
 	public boolean modifyStudentLesson(String codeStudent, String codelesson,
-			AccessModification access) throws SaveAttributeException {
+			AccessModification access, HttpServletRequest req) throws AttributeNotFoundException {
+		tokenProvider.validateToken(req);
 		try {
 			if(access.equals(AccessModification.ADD)) {
 				Student hg = studentRepo.getById(codeStudent);
@@ -187,12 +220,14 @@ public class StudentService {
 				return true;
 			}
 		}catch(Exception e) {
-			throw new SaveAttributeException("Cannot modify this study, maybe study code has been already /or study is not found");
+			throw new AttributeNotFoundException("Cannot modify this study, maybe study code has been already /or study is not found");
 		}
 	}
 	
 	@Transactional
-	public boolean modifyStudentArrive(String codeStudent, ArrivalStudent arrive, AccessModification access) throws SaveAttributeException {
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+	public boolean modifyStudentArrive(String codeStudent, ArrivalStudent arrive, AccessModification access, HttpServletRequest req) throws AttributeNotFoundException {
+		tokenProvider.validateToken(req);
 		try {
 			if(access.equals(AccessModification.ADD)) {
 				Student hg = studentRepo.getById(codeStudent);
@@ -204,17 +239,18 @@ public class StudentService {
 				return true;
 			}
 			else {
-				arriveStudentRepo.delete(arrive);
+				arriveStudentRepo.deleteByIdArrive(arrive.getIdArrive());
 				return true;
 			}
 		}catch(Exception e) {
-			throw new SaveAttributeException("Cannot modify this arrive, maybe student is not found");
+			throw new AttributeNotFoundException("Cannot modify this arrive, maybe student is not found");
 		}
 	}
 	
 	@Transactional
 	@PreAuthorize("hasAuthority('ADMIN')")
-	public void delete(Student student) throws AttributeNotFoundException {
+	public void delete(Student student, HttpServletRequest req) throws AttributeNotFoundException {
+		tokenProvider.validateToken(req);
 		try {
 			studentRepo.delete(student);
 		}

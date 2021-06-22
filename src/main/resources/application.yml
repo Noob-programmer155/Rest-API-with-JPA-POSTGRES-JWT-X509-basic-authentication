@@ -1,0 +1,164 @@
+server:
+  port: 6753  ssl:    key-alias: keystore
+    key-store: classpath:static/ssl/keystore.p12
+    key-store-password: Amar1986#
+    enabled: true
+
+management:  endpoints:    web:      exposure:        include: "*"
+
+spring:  datasource:    url: <url oracle>
+    username: <username>
+    password: <password>
+    driver-class-name: <driver class>    hikari:      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 50000
+      max-lifetime: 300000
+      connection-timeout: 40000
+  jpa:    show-sql: true
+    hibernate:      ddl-auto: create-drop      use-new-id-generator-mappings: false
+    properties:
+      hibernate:        format_sql: true
+    database-platform: org.hibernate.dialect.Oracle12cDialect  mail:    host: smtp.gmail.com
+    username: <email>
+    password: <password email application>
+    properties:
+      mail:
+        smtp:
+          auth: true
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
+          ssl: 
+            enable: true
+Authentication:
+#  user: Admin
+#  password: Admin
+  Jwt:
+    secret-key: this is secret key !!!
+    validity: 3600000
+
+Rest:
+  Admin:
+    getadmin:
+      value: get current admin active
+      note: to get current admin active with authenticate as admin before access it
+    signin:
+      value: Admin signin
+      note: for login admin
+    signup:
+      value: Admin signup
+      note: for register new admin
+    signupresponse:
+      value: response from admin signup
+      note: response from admin server in teh form of email that send to new admin email
+    refresh:
+      value: refresh token
+      note: for refresh admin token if token expired
+    send:
+      value: send message
+      note: send message email to other, use to give notifications
+    savelesson:
+      value: save lesson study
+      note: for save new lesson study
+    savealllesson:
+      value: save all lesson study
+      note: to save multiple lesson studies (fast way)
+    deletelesson:
+      value: delete lesson study
+      note: to delete lesson study
+    modifylesson:
+      value: modify lesson study
+      note: to modify lesson study
+    deleteadmin:
+      value: delete admin
+      note: to delete admin
+  Student:
+    findAllStudents:
+      value: find all student
+      note: find all student by list student code or find all student 
+    findStudent:
+      value: find student
+      note: find a student by student code
+    findAllLesson:
+      value: find all lesson
+      note: find all the lessons associated with a student whether by lesson type or not
+    findLesson:
+      value: find lesson
+      note: find lesson study by lesson code
+    getArriveStudentBetween:
+      value: find student arrivals
+      note: find student arrival between from one time to another (time format = yyyy-mm-dd)
+    getArriveStudent:
+      value: find student arrival
+      note: fin student arrival by id arrival
+    save:
+      value: save student
+      note: save student to database
+    saveAll:
+      value: save all students
+      note: save all new students to database
+    modify:
+      value: modify student
+      note: to modify student
+    modifyAll:
+      value: modify all students
+      note: modify all students in the list
+    modifyTeacher:
+      value: modify teacher student
+      note: add or delete link to teacher in student side
+    modifyLesson:
+      value: modify lesson student
+      note: add or delete link to lesson study
+    addArrive:
+      value: add student arrival
+      note: add student arrival activity
+    removeArrive:
+      value: remove student arrival
+      note: remove student arrival
+    delete:
+      value: delete student
+      note: to delete student and all link to resource
+  Teacher:
+    findAllTeachers:
+      value: find all teacher
+      note: find all teacher by list teacher code or find all teacher
+    findTeacher:
+      value: find teacher
+      note: find a teacher by teacher code
+    findAllLesson:
+      value: find all lesson
+      note: find all the lessons associated with a teacher whether by lesson type or not
+    findLesson:
+      value: find lesson
+      note: find lesson study by lesson code
+    getArriveTeacherBetween:
+      value: find teacher arrivals
+      note: find teacher arrival between from one time to another (time format = yyyy-mm-dd)
+    getArriveTeacher:
+      value: find teacher arrival
+      note: fin teacher arrival by id arrival
+    save:
+      value: save teacher
+      note: save teacher to database
+    saveAll:
+      value: save all teachers
+      note: save all new teachers to database
+    modify:
+      value: modify teacher
+      note: to modify teacher
+    modifyAll:
+      value: modify all teachers
+      note: modify all teachers in the list
+    modifyLesson:
+      value: modify lesson teacher
+      note: add or delete link to lesson study
+    addArrive:
+      value: add teacher arrival
+      note: add teacher arrival activity
+    removeArrive:
+      value: remove teacher arrival
+      note: remove teacher arrival
+    delete:
+      value: delete teacher
+      note: to delete teacher and all link to resource

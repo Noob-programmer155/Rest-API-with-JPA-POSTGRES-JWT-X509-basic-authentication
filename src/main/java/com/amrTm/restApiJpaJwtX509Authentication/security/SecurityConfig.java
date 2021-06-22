@@ -48,10 +48,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http.cors()
 				.and()
 			.csrf()
-				.ignoringAntMatchers("/firns/signin","/firns/signup/**","/firns/deleteLesson"
-						,"/firns/send-message","/firns/modify/**","/firns/save/**")
+				.ignoringAntMatchers("/firns/signin","/firns/signup/**","/firns/delete/**"
+						,"/firns/send-message","/firns/modify/**","/firns/save/**",
+						"/firns/refresh")
 				.ignoringAntMatchers("/students/save/**","/students/modify/**","/students/delete"
-						,"/teachers/save/**","/teachers/modify/**","/teachers/delete")
+							,"/teachers/save/**","/teachers/modify/**","/teachers/delete")
 				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 			.and()
 //		# because we are using based csrf token, then we must make session automatically 
@@ -62,9 +63,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 					.antMatchers("/students/save/**","/students/modify/**","/students/delete"
 							,"/teachers/save/**","/teachers/modify/**","/teachers/delete").permitAll()
 					.antMatchers("/actuator/**").hasAuthority("ADMIN")
-					.antMatchers("/firns/signin","/firns/signup/**","/firns/deleteLesson"
-							,"/firns/send-message","/firns/modify/**","/firns/save/**").permitAll()
-					.anyRequest().authenticated();
+					.antMatchers("/firns/signin","/firns/signup/**","/firns/delete/**"
+							,"/firns/send-message","/firns/modify/**","/firns/save/**"
+							,"/firns/refresh").permitAll()
+					.anyRequest().authenticated()
+			.and()
+				.logout()
+					.logoutUrl("/logout")
+					.clearAuthentication(true)
+					.invalidateHttpSession(true)
+					.deleteCookies("JSESSIONID","JWT_BEARER","XSRF-TOKEN");
 //			.and()
 //			.httpBasic();
 		
