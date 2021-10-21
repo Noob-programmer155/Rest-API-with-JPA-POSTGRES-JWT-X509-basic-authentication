@@ -1,4 +1,4 @@
-package com.amrTm.restApiJpaJwtX509Authentication.repo;
+package com.amrTm.restApiJpaJwtX509Authentication.repository;
 
 import java.util.List;
 

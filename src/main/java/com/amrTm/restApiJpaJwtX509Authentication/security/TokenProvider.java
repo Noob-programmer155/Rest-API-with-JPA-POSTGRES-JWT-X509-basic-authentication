@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.WebUtils;
 
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Role;
-import com.amrTm.restApiJpaJwtX509Authentication.repo.AdminRepo;
+import com.amrTm.restApiJpaJwtX509Authentication.repository.AdminRepo;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;

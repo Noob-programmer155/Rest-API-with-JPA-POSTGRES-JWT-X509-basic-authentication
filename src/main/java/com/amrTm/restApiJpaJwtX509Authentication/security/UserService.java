@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Admin;
-import com.amrTm.restApiJpaJwtX509Authentication.repo.AdminRepo;
+import com.amrTm.restApiJpaJwtX509Authentication.repository.AdminRepo;
 
 @Service
 public class UserService implements UserDetailsService{

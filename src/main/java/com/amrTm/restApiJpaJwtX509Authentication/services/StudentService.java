@@ -19,10 +19,10 @@ import com.amrTm.restApiJpaJwtX509Authentication.entity.Lesson;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.AttributeNotFoundException;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.SaveAttributeException;
-import com.amrTm.restApiJpaJwtX509Authentication.repo.ArriveStudentRepo;
-import com.amrTm.restApiJpaJwtX509Authentication.repo.LessonRepo;
-import com.amrTm.restApiJpaJwtX509Authentication.repo.StudentRepo;
-import com.amrTm.restApiJpaJwtX509Authentication.repo.TeacherRepo;
+import com.amrTm.restApiJpaJwtX509Authentication.repository.ArriveStudentRepo;
+import com.amrTm.restApiJpaJwtX509Authentication.repository.LessonRepo;
+import com.amrTm.restApiJpaJwtX509Authentication.repository.StudentRepo;
+import com.amrTm.restApiJpaJwtX509Authentication.repository.TeacherRepo;
 import com.amrTm.restApiJpaJwtX509Authentication.security.TokenProvider;
 
 @Service

@@ -20,7 +20,7 @@ import com.amrTm.restApiJpaJwtX509Authentication.entity.Role;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Student;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Lesson;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
-import com.amrTm.restApiJpaJwtX509Authentication.repo.AdminRepo;
+import com.amrTm.restApiJpaJwtX509Authentication.repository.AdminRepo;
 import com.amrTm.restApiJpaJwtX509Authentication.security.TokenProvider;
 import com.amrTm.restApiJpaJwtX509Authentication.services.TeacherService;
 import com.amrTm.restApiJpaJwtX509Authentication.services.AccessModification;

@@ -25,10 +25,9 @@ import com.amrTm.restApiJpaJwtX509Authentication.entity.Student;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.AttributeNotFoundException;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.SaveAttributeException;
-import com.amrTm.restApiJpaJwtX509Authentication.mailConfig.MailService;
-import com.amrTm.restApiJpaJwtX509Authentication.repo.AdminRepo;
-import com.amrTm.restApiJpaJwtX509Authentication.repo.LessonEntity;
-import com.amrTm.restApiJpaJwtX509Authentication.repo.LessonRepo;
+import com.amrTm.restApiJpaJwtX509Authentication.repository.AdminRepo;
+import com.amrTm.restApiJpaJwtX509Authentication.repository.LessonEntity;
+import com.amrTm.restApiJpaJwtX509Authentication.repository.LessonRepo;
 import com.amrTm.restApiJpaJwtX509Authentication.security.TokenProvider;
 
 @Service

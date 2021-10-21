@@ -27,8 +27,8 @@ import com.amrTm.restApiJpaJwtX509Authentication.entity.Lesson;
 import com.amrTm.restApiJpaJwtX509Authentication.entity.Teacher;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.AttributeNotFoundException;
 import com.amrTm.restApiJpaJwtX509Authentication.exception.SaveAttributeException;
-import com.amrTm.restApiJpaJwtX509Authentication.mailConfig.MessageObject;
 import com.amrTm.restApiJpaJwtX509Authentication.services.AdminService;
+import com.amrTm.restApiJpaJwtX509Authentication.services.MessageObject;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

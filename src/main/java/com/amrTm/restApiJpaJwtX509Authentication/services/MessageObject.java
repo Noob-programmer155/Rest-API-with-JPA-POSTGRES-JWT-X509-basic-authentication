@@ -1,4 +1,4 @@
-package com.amrTm.restApiJpaJwtX509Authentication.mailConfig;
+package com.amrTm.restApiJpaJwtX509Authentication.services;
 
 public class MessageObject {
 	private String to; 
