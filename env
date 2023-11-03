@@ -1,0 +1,22 @@
+POSTGRES_URL=jdbc:postgresql://0.0.0.0:3555/restapi
+POSTGRES_USERNAME=admin
+POSTGRES_PASSWORD=admin
+
+MAIL_USERNAME=<your username>
+MAIL_PASSWORD=<your password>
+
+JWT_SECRET_KEY=Aja67fahYUt67B78#
+
+ORIGINS=https://0.0.0.0:9912
+
+SSL_KEY_STORE=/home/amar/worked/RestApiJPAORACLE/keystore.p12
+#ssl.key pass phrase: AJisd90Hnuii8N9n898H#
+SSL_KEY_STORE_PASSWORD=7sAH98nvHBb#
+SSL_KEY_STORE_TYPE=PKCS12
+SSL_KEY_ALIAS=rijal
+#SSL_TRUST_STORE: /home/amar/worked/RestApiJPAORACLE/client-truststore.jks
+#SSL_TRUST_STORE_PASSWORD: your-truststore-password
+#SSL_TRUST_STORE_TYPE: JKS
+
+#ORACLE PASSWORD FOR SYS, SYSTEM AND PDBADMIN: Amar8390#
+

@@ -1,6 +1,5 @@
 package com.amrTm.restApiJpaJwtX509Authentication;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,17 +106,20 @@ public class RestApiWithJpaOracleJwtX509BasicAuthenticationApplication implement
 //		studentService.modifyStudentLesson(gf.getStudentCode(), bhe.getCodeLesson(), AccessModification.DELETE);
 //		bhe.setLesson("Learn With Java");
 //		adminService.modifyLesson(bhe);
-//		
-		Admin hg = new Admin();
-		hg.setUsername("Amar");
-		hg.setPassword(new BCryptPasswordEncoder().encode("Amar"));
-		hg.setEmail("rijalamar29@gmail.com");
-		List<Role> kj = new ArrayList<>();
-		kj.add(Role.ADMIN);
-		kj.add(Role.USER);
-		hg.setRole(kj);
-		hg.setValidation(true);
-		adminRepo.saveAndFlush(hg);
-		System.out.println(tokenProvider.setToken(hg.getUsername(), hg.getEmail(), hg.getRole()));
+//
+
+		if (!adminRepo.existsByUsernameAndEmail("Amar","rijalamar29@gmail.com")) {
+			Admin hg = new Admin();
+			hg.setUsername("Amar");
+			hg.setPassword(new BCryptPasswordEncoder().encode("Amar"));
+			hg.setEmail("rijalamar29@gmail.com");
+			List<Role> kj = new ArrayList<>();
+			kj.add(Role.ADMIN);
+			kj.add(Role.USER);
+			hg.setRole(kj);
+			hg.setValidation(true);
+			adminRepo.saveAndFlush(hg);
+			System.out.println(tokenProvider.setToken(hg.getUsername(), hg.getEmail(), hg.getRole()));
+		}
 	}
 }

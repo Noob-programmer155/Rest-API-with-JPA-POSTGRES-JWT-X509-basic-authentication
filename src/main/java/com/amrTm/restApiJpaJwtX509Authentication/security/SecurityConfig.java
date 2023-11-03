@@ -1,8 +1,10 @@
 package com.amrTm.restApiJpaJwtX509Authentication.security;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +26,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled=true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+	@Value("${Origins}")
+	private String origins;
 
 	@Autowired
 	private UserService user;
@@ -35,7 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
-		config.setAllowedOrigins(Arrays.asList("link to frontend services"));
+		config.setAllowedOrigins(Arrays.stream(origins.split(";")).collect(Collectors.toList()));
 		config.addAllowedHeader("*");
 		config.addAllowedMethod("*");
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -45,16 +49,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.cors()
-				.and()
-			.csrf()
-				.ignoringAntMatchers("/firns/signin","/firns/signup/**","/firns/delete/**"
-						,"/firns/send-message","/firns/modify/**","/firns/save/**",
-						"/firns/refresh")
-				.ignoringAntMatchers("/students/save/**","/students/modify/**","/students/delete"
-							,"/teachers/save/**","/teachers/modify/**","/teachers/delete")
-				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-			.and()
+		http.requiresChannel().anyRequest().requiresSecure().and().cors()
+				.and().x509().subjectPrincipalRegex("CN=(.*?)(?:,|$)")
+				.and().csrf().disable()
+//				.ignoringAntMatchers("/firns/signin","/firns/signup/**","/firns/delete/**"
+//						,"/firns/send-message","/firns/modify/**","/firns/save/**",
+//						"/firns/refresh")
+//				.ignoringAntMatchers("/students/save/**","/students/modify/**","/students/delete"
+//							,"/teachers/save/**","/teachers/modify/**","/teachers/delete")
+//				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+//			.and()
 //		# because we are using based csrf token, then we must make session automatically 
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
 			.and()

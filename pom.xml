@@ -11,7 +11,7 @@
 	<groupId>com.AmrTm.boot</groupId>
 	<artifactId>rest-api-jpa-jwt-x509-authentication</artifactId>
 	<version>0.1</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>Rest-API-with-JPA-ORACLE-JWT-X509-basic-authentication</name>
 	<description>Rest-API-with-JPA-ORACLE-JWT-X509-basic-authentication in spring boot</description>
 	<properties>
@@ -80,10 +80,15 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.oracle.database.jdbc</groupId>-->
+<!--			<artifactId>ojdbc8</artifactId>-->
+<!--			<scope>runtime</scope>-->
+<!--		</dependency>-->
 		<dependency>
-			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ojdbc8</artifactId>
-			<scope>runtime</scope>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.5.4</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.modelmapper</groupId>
@@ -98,7 +103,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
+<!--			<scope>provided</scope>-->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -113,12 +118,21 @@
 	</dependencies>
 
 	<build>
+		<finalName>RestAPIv1</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-		</plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+<!--                <configuration>-->
+<!--                    <source>16</source>-->
+<!--                    <target>16</target>-->
+<!--                </configuration>-->
+            </plugin>
+        </plugins>
 	</build>
 
 </project>
